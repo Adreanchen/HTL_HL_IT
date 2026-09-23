@@ -10,7 +10,7 @@
    Diese Abfrage sollte in einer Spalte resultieren.
 
    ```sql
-   SELECT first_name || ' ' || last_name AS full_name FROM actor;
+   SELECT first_name || ' ' || last_name FROM actor;
    ```
 
 3. Wähle die Schauspieler aus, deren Namen mit einem 'D' beginnen.
@@ -36,7 +36,7 @@
    wie lange die DVD ausgeliehen werden darf.
 
    ```sql
-   SELECT rental_duration, COUNT(*) AS film_count FROM film GROUP BY rental_duration;
+   SELECT rental_duration, COUNT(*) FROM film GROUP BY rental_duration;
    ```
 
 7. Wählen Sie den maximalen Ersatzpreis
@@ -60,25 +60,26 @@
 10. Wählen Sie die Anzahl der verfügbaren Filme unter jedem rating aus.
 
     ```sql
-    SELECT rating, COUNT(*) AS film_count FROM film GROUP BY rating;
+    SELECT rating, COUNT(*) FROM film GROUP BY rating;
     ```
 
 11. Ändere die Filmsprache für die ersten 20 Filme von Englisch auf Italienisch.
 
     ```sql
+    SELECT * FROM language; #um nachzuschaun welche language_id italienisch hat
     UPDATE film SET language_id = 2 WHERE film_id IN (SELECT film_id FROM film ORDER BY film_id LIMIT 20);
     ```
 
 12. Wählen Sie die Anzahl der Filme nach Sprache gruppiert
 
     ```sql
-    SELECT language_id, COUNT(*) AS film_countFROM FROM film GROUP BY language_id;
+    SELECT language_id, COUNT(*) FROM film GROUP BY language_id;
     ```
 
 13. Wählen Sie die Sprache, zu der die meisten Filme gehören.
 
     ```sql
-    SELECT l.name, COUNT(f.film_id) AS film_count FROM film f JOIN language l ON f.language_id = l.language_id GROUP BY l.name ORDER BY film_count DESC LIMIT 1;
+    SELECT language.name, COUNT(film.film_id) AS film_count FROM film JOIN language ON film.language_id = language.language_id GROUP BY language.name ORDER BY film_count DESC LIMIT 1;
     ```
 
 14. Filmtitel sowie Ersatzkosten und Bewertungen auswählen sowie
@@ -86,14 +87,14 @@
     zu der der Film gehört.
 
     ```sql
-    SELECT title, replacement_cost, rating, AVG(replacement_cost) OVER (PARTITION BY rating) AS avg_replacement_cost_per_rating FROM film;
+    SELECT title, replacement_cost, rating, AVG(replacement_cost) OVER (PARTITION BY rating) FROM film;
     ```
 
 15. Wählen Sie die Bewertungen und durchschnittlichen Ersatzkosten
     für italienische Filme aus.
 
     ```sql
-    SELECT f.rating, AVG(f.replacement_cost) AS avg_replacement_cost FROM film f JOIN language l ON f.language_id = l.language_id WHERE LOWER(TRIM(l.name)) = 'italian' GROUP BY f.rating;
+    SELECT film.rating, AVG(film.replacement_cost) FROM film JOIN language ON film.language_id = language.language_id WHERE LOWER(TRIM(language.name)) = 'italian' GROUP BY film.rating;
     ```
 
 16. Zählen Sie die Filme mit der maximalen replacement_cost in der Filmtabelle.
@@ -106,7 +107,7 @@
        (Beachten Sie, dass wir Filme haben, die nur auf Englisch und Italienisch sind).
 
     ```sql
-    SELECT l.name, COUNT(f.film_id) AS film_count FROM film f JOIN language l ON f.language_id = l.language_id GROUP BY l.name;
+    SELECT language.name, COUNT(film.film_id) FROM film JOIN language ON film.language_id = language.language_id GROUP BY language.name;
     ```
 
 18. Zähle die Anzahl der Filme, die unter jeder der 6 Sprachen existieren,
@@ -114,14 +115,14 @@
     Mandarin, Japanisch und Deutsch).
 
     ```sql
-    SELECT l.name, COUNT(f.film_id) AS film_count FROM language l LEFT JOIN film f ON l.language_id = f.language_id GROUP BY l.language_id, l.name;
+    SELECT language.name, COUNT(film.film_id) FROM language LEFT JOIN film ON language.language_id = film.language_id GROUP BY language.language_id, language.name;
     ```
 
 19. Zähle die Anzahl der Filme nach language_id und Bewertung und sortiere die Ergebnisse nach
     aufsteigender Sprache.
 
     ```sql
-    SELECT language_id, rating, COUNT(*) AS film_count FROM film GROUP BY language_id, rating ORDER BY language_id ASC;
+    SELECT language_id, rating, COUNT(*) FROM film GROUP BY language_id, rating ORDER BY language_id ASC;
     ```
 
 
