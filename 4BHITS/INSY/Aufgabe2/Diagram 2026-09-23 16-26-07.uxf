@@ -1,0 +1,27 @@
+<diagram program="umletino" version="15.1"><zoom_level>14</zoom_level><element><id>UMLClass</id><coordinates><x>154</x><y>0</y><w>294</w><h>98</h></coordinates><panel_attributes>aufgabe
+-
+aufgaben_id INT [PK]
+bezeichnung VARCHAR(45)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>686</x><y>14</y><w>294</w><h>84</h></coordinates><panel_attributes>geschaeftsfuehrer
+-
+geschaeftsfuehrer_id INT [PK]
+name VARCHAR(45)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>154</x><y>308</y><w>294</w><h>112</h></coordinates><panel_attributes>arbeiter
+-
+arbeiter_id INT [PK]
+fabrik_id INT [FK]
+name VARCHAR(45)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>686</x><y>308</y><w>294</w><h>112</h></coordinates><panel_attributes>fabrik
+-
+fabrik_id INT
+geschaeftsfuehrer_id INT [FK]
+bezeichnung VARCHAR(45)</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>434</x><y>42</y><w>280</w><h>56</h></coordinates><panel_attributes>lt=-
+m1=n
+m2=1</panel_attributes><additional_attributes>10;10;180;10</additional_attributes></element><element><id>Relation</id><coordinates><x>434</x><y>336</y><w>280</w><h>56</h></coordinates><panel_attributes>lt=-
+m1=n
+m2=1</panel_attributes><additional_attributes>10;10;180;10</additional_attributes></element><element><id>Relation</id><coordinates><x>294</x><y>84</y><w>56</w><h>252</h></coordinates><panel_attributes>lt=-
+m1=m
+m2=n</panel_attributes><additional_attributes>10;10;10;160</additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>168</y><w>224</w><h>84</h></coordinates><panel_attributes>aufgabe_arbeiter
+-
+arbeiter_id INT [PK, FK]
+aufgaben_id INT [PK, FK]</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>826</x><y>84</y><w>56</w><h>252</h></coordinates><panel_attributes>lt=-
+m1=1
+m2=1</panel_attributes><additional_attributes>10;10;10;160</additional_attributes></element><element><id>Relation</id><coordinates><x>210</x><y>196</y><w>140</w><h>56</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m1=hat</panel_attributes><additional_attributes>80;10;10;10</additional_attributes></element></diagram>
