@@ -1,14 +1,20 @@
 package at.htlhl.httpclientdemo;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * POJO for product
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Product {
 
     // Fields *****************************************************************
 
-    private int id;
+    private Integer id;
     private String name;
+    private Double price;
     private String self_link;
 
     // Constructors ***********************************************************
@@ -19,11 +25,11 @@ public class Product {
 
     // Getters and Setters ****************************************************
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -33,6 +39,14 @@ public class Product {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
     }
 
     public String getSelf_link() {

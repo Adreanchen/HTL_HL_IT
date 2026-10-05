@@ -22,5 +22,6 @@
 | /ip/address/remove number=`?`                           | die number ist der index beginnend mit 0                     |
 | /interface/bridge/add name=br                           | um einen switch zu erstellen mit dem namen br                |
 | /interface/bridge/port/add bridge=br interface=ether`?` | hier weise ich dem switch einen port zu                      |
-| /ip/route/add dst-address=`?`(mit `/`) gateway=`?`      | statisches routen                                            |
+| /ip/route/add dst-address=`?/?` gateway=`?`             | statisches routen                                            |
+|                                                         |                                                              |
 

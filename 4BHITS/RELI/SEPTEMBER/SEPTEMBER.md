@@ -133,7 +133,36 @@ Nein. Geld nimmt Sorgen und schafft Freiräume, aber Liebe, Gesundheit und echte
 5. **Krankheiten**
 6. **Neid**
 
-
-
 ### [5_Bibeltext](5_Bibeltext.pdf)
 
+## 3 Wirtschaftsformen
+
+### freie Marktwirtschaft -> USA
+
+**Menschenbild:** Der **autonome, eigenverantwortliche Einzelne** (*Homo oeconomicus*).
+
+**Rolle:** Eigenständiger Marktteilnehmer, Konsument und Unternehmer.
+
+**Fokus:** Der Mensch strebt primär nach persönlicher Gewinn- und Nutzenmaximierung. Individuelle Freiheit und Leistungsprinzip stehen an erster Stelle; jede/r ist für den eigenen Erfolg und Ausfall selbst verantwortlich (*„Jeder ist seines Glückes Schmied“*).
+
+https://www.youtube.com/watch?v=Y3u384WanSg
+
+### (öko-) soziale Marktwirtschaft (Ö) -> EU
+
+**Menschenbild:** Das **freie, aber sozial und ökologisch eingebundene Individuum**.
+
+**Rolle:** Mündiges Mitglied einer Solidargemeinschaft mit Rechten und Pflichten.
+
+**Fokus:** Verbindet den Wunsch nach individueller Entfaltung mit der Verantwortung für Schwächere (Sozialstaat) und künftige Generationen (Ökologie). Der Mensch gilt als leistungsfähig, aber schutzbedürftig bei Lebensrisiken wie Krankheit, Alter oder Arbeitslosigkeit.
+
+https://www.youtube.com/watch?v=-zMQhicI4xo
+
+### Planwirtschaft -> Kommunismus
+
+**Menschenbild:** Der **Kollektivmensch** (das gesellschaftliche Wesen).
+
+**Rolle:** Gleichberechtigtes Teilchen des Gesamtsystems / Rädchen im staatlichen Getriebe.
+
+**Fokus:** Das Wohl der Gemeinschaft steht über den Interessen des Einzelnen. Individuelles Streben nach Kapital gilt als egoistisch und schädlich; Statussymbole und Klassenunterschiede sollen durch staatlich gelenkte Gleichheit ersetzt werden.
+
+https://www.youtube.com/watch?v=sK424vC5X8s

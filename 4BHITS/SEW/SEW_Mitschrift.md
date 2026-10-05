@@ -52,3 +52,15 @@ Diese Klasse repräsentiert die Antwort des Servers. Sie bietet viele hilfreiche
 - `body()` : Liefert die Datender Anfrage
 
 Weitere Infos, siehe https://www.baeldung.com/java-9-http-client sowie die Java API-Doc https://docs.oracle.com/en/java/javase/11/. 
+
+## Spring Einführung 
+
+Spring ist eine Backend Technologie mit einem breiten Anwendungsfeld und wird heufig für die Entwicklung von Webanwendungen verwendet, da es im Vergleich zur ursprünglich vorgesehenen JavaEE (Enterprise Edition) wesentlich komfortabler ist. 
+
+Zu den wichtigsten Komponenten des Spring Ökosystems zählen: 
+
+- **Spring Core:** Kernsystem (v.a. Dependency Injection) 
+- **Spring MVC:** Model-View-Controller (aufbereitete Daten-GUI-Webservice)
+- **Spring Persistence:** Datenbankzugriff 
+
+Aufgrund der komplexen Konfiguration entwickelte sich Spring Boot das auf sinnvolle Defaulteinstellungen setzt. (Convention over Configuration) 
