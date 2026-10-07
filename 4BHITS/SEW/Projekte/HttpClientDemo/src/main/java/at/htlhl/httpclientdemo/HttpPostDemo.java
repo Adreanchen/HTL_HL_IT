@@ -34,12 +34,12 @@ public class HttpPostDemo {
     public HttpPostDemo() {
         try {
             // Zu sendendes Produktobjekt erstellen
-            Product newProduct = new Product();
-            newProduct.setName("Benni");
-            newProduct.setPrice(6.7);
+            Product postProduct = new Product();
+            postProduct.setName("Birnee");
+            postProduct.setPrice(6.9);
 
             // Objekt in JSON-String serialisieren
-            String requestBody = jsonMapper.writeValueAsString(newProduct);
+            String requestBody = jsonMapper.writeValueAsString(postProduct);
 
             /**
              * HTTP POST-Request erzeugen

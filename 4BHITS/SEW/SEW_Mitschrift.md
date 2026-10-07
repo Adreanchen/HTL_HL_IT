@@ -64,3 +64,47 @@ Zu den wichtigsten Komponenten des Spring Ökosystems zählen:
 - **Spring Persistence:** Datenbankzugriff 
 
 Aufgrund der komplexen Konfiguration entwickelte sich Spring Boot das auf sinnvolle Defaulteinstellungen setzt. (Convention over Configuration) 
+
+## Dependency Injection (Pattern) 
+
+Dependency = Abhängigkeit 
+
+Was ist eine Abhängigkeit? 
+
+Klasse A hat eine Abhängigkeit zu Klasse B, wenn sie in irgendeiner Form mit dieser interagiert. 
+
+![pics/dependency.png](pics/dependency.png)
+
+z.B.: Klasse A instanziert Klasse B selbst: 
+
+``````java
+public class A { 
+	private B bDependency; 
+	public A() { 
+		bDependency = new B(); 
+	} 
+} 
+``````
+
+Oder man injiziert eine Instanz der Klasse B in A (Dependency Injection) 
+
+``````java
+publci class A { 
+	private B b; 
+	public A (B bDependency){ 
+		this.b = bDependency; 
+	} 
+} 
+``````
+
+ **Es gibt drei Arten der Injektion:** 
+
+- mittels Konstruktor (siehe Bsp oben) 
+- mittels Setter 
+- mittels Eigenschaft (z.B. mit Annotierung (Bsp: '@Autowired' in Spring) 
+
+**Vorteile von Dependency Injection:** 
+
+- Trennung von Zuständigkeiten 
+- Ein lose gekoppeltes System 
+- Sehr hilfreich beim Testen (Test-Mockups werden injiziert) 

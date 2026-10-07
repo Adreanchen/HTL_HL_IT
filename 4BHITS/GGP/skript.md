@@ -24,12 +24,48 @@
 
 ### 3.1. BIP
 
-**pro Kopf für Österreich (20_): 57 000$  (Platz 15)**
+**pro Kopf für Österreich (2024): 57 000$  (Platz 15)**
 
-## 3.2. Wirtschaftswachstum
+### 3.2. Wirtschaftswachstum
+
 **Wirtschaftswachstum Zunahme des BIP/ Jahr**
 
 * Wirtschaftswachstum 2023: -0,8%
 * Wirtschaftswachstum 2024: -0,7%
 * Prognose für 2025: +0,8%
 * Prognose für 2026: +0,9%
+
+### 3.3. Human Development Index (HDI)
+
+* Österreich 2023: Platz 22: 0.93
+
+# 4. Der Markt — Angebot und Nachfrage
+### 4.2. Vollkommene und unvollkommene Märkte
+
+**Arbeitsaufgabe:** Nenne konkrete Beispiele, bei denen das Modell von Angebot und
+Nachfrage nicht funktioniert ...
+**persönliche Gründe**
+
+* persönlicher Wert
+* vertrauter Bäcker
+* kauf von Markenprodukten
+
+**örtliche Gegebenheiten**
+
+* zu weit entfernt von einem anderen Anbieter
+* bei Konzerten
+
+**Kauf unter Zeitdruck**
+
+* auf den weg zur Arbeit oder etc. 
+* Geburtstagsgeschenk
+
+**einen oder nur wenige Anbieter**
+
+* dorfapotheke
+* maßanfertigung
+
+**mangelnde Übersicht über das Angebot**
+
+* ältere Menschen ohne Internet
+* Chinesische Autos

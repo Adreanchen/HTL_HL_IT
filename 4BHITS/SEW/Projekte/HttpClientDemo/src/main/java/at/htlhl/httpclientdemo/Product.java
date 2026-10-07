@@ -64,6 +64,7 @@ public class Product {
         return "Product{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", price=" + price +
                 ", self_link='" + self_link + '\'' +
                 '}';
     }
