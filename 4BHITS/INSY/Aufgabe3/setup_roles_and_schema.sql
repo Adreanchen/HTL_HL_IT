@@ -1,0 +1,118 @@
+CREATE ROLE dbadmin WITH LOGIN PASSWORD 'dbadmin123' CREATEDB CREATEROLE;
+
+SET ROLE dbadmin;
+
+CREATE ROLE admin_grp;
+CREATE ROLE production_grp;
+CREATE ROLE developer_grp;
+CREATE ROLE read_only_grp;
+
+GRANT admin_grp TO dbadmin;
+
+CREATE ROLE admin1 WITH LOGIN PASSWORD 'admin1_pw';
+CREATE ROLE admin2 WITH LOGIN PASSWORD 'admin2_pw';
+GRANT admin_grp TO admin1, admin2;
+
+CREATE ROLE prod1 WITH LOGIN PASSWORD 'prod1_pw';
+CREATE ROLE prod2 WITH LOGIN PASSWORD 'prod2_pw';
+GRANT production_grp TO prod1, prod2;
+
+CREATE ROLE dev1 WITH LOGIN PASSWORD 'dev1_pw';
+CREATE ROLE dev2 WITH LOGIN PASSWORD 'dev2_pw';
+GRANT developer_grp TO dev1, dev2;
+
+CREATE ROLE ro1 WITH LOGIN PASSWORD 'ro1_pw';
+CREATE ROLE ro2 WITH LOGIN PASSWORD 'ro2_pw';
+GRANT read_only_grp TO ro1, ro2;
+
+CREATE DATABASE testdb OWNER admin_grp;
+
+\c testdb admin1
+
+REVOKE ALL ON DATABASE testdb FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+
+GRANT CONNECT, TEMPORARY ON DATABASE testdb TO admin_grp, production_grp, developer_grp, read_only_grp;
+
+CREATE SCHEMA tests AUTHORIZATION admin_grp;
+
+CREATE TABLE tests.t1_rw (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    val INT NOT NULL
+);
+
+CREATE TABLE tests.t2_rw (
+    id SERIAL PRIMARY KEY,
+    code VARCHAR(20) NOT NULL,
+    amount NUMERIC(10,2) NOT NULL
+);
+
+CREATE TABLE tests.t3_ro (
+    id SERIAL PRIMARY KEY,
+    category VARCHAR(30) NOT NULL,
+    description TEXT NOT NULL
+);
+
+INSERT INTO tests.t1_rw (name, val) VALUES 
+    ('Alpha', 100), 
+    ('Beta', 200), 
+    ('Gamma', 300);
+
+INSERT INTO tests.t2_rw (code, amount) VALUES 
+    ('ITEM-001', 49.99), 
+    ('ITEM-002', 129.50), 
+    ('ITEM-003', 19.00);
+
+INSERT INTO tests.t3_ro (category, description) VALUES 
+    ('SYS_CONF', 'System Configuration'), 
+    ('STATIC_DATA', 'Read-Only Static Reference');
+
+GRANT USAGE, CREATE ON SCHEMA tests TO admin_grp;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA tests TO admin_grp;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA tests TO admin_grp;
+
+GRANT USAGE ON SCHEMA tests TO production_grp;
+GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA tests TO production_grp;
+GRANT DELETE ON TABLE tests.t1_rw, tests.t2_rw TO production_grp;
+GRANT SELECT, USAGE, UPDATE ON ALL SEQUENCES IN SCHEMA tests TO production_grp;
+
+GRANT USAGE ON SCHEMA tests TO read_only_grp;
+GRANT SELECT ON ALL TABLES IN SCHEMA tests TO read_only_grp;
+GRANT SELECT ON ALL SEQUENCES IN SCHEMA tests TO read_only_grp;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE admin1 IN SCHEMA tests 
+    GRANT ALL PRIVILEGES ON TABLES TO admin_grp;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE admin1 IN SCHEMA tests 
+    GRANT ALL PRIVILEGES ON SEQUENCES TO admin_grp;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE admin1 IN SCHEMA tests 
+    GRANT SELECT, INSERT, UPDATE ON TABLES TO production_grp;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE admin1 IN SCHEMA tests 
+    GRANT SELECT, USAGE, UPDATE ON SEQUENCES TO production_grp;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE admin1 IN SCHEMA tests 
+    GRANT SELECT ON TABLES TO read_only_grp;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE admin1 IN SCHEMA tests 
+    GRANT SELECT ON SEQUENCES TO read_only_grp;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE admin_grp IN SCHEMA tests 
+    GRANT ALL PRIVILEGES ON TABLES TO admin_grp;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE admin_grp IN SCHEMA tests 
+    GRANT ALL PRIVILEGES ON SEQUENCES TO admin_grp;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE admin_grp IN SCHEMA tests 
+    GRANT SELECT, INSERT, UPDATE ON TABLES TO production_grp;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE admin_grp IN SCHEMA tests 
+    GRANT SELECT, USAGE, UPDATE ON SEQUENCES TO production_grp;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE admin_grp IN SCHEMA tests 
+    GRANT SELECT ON TABLES TO read_only_grp;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE admin_grp IN SCHEMA tests 
+    GRANT SELECT ON SEQUENCES TO read_only_grp;
