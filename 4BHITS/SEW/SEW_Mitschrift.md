@@ -108,3 +108,25 @@ publci class A {
 - Trennung von Zuständigkeiten 
 - Ein lose gekoppeltes System 
 - Sehr hilfreich beim Testen (Test-Mockups werden injiziert) 
+
+### Unveränderliche Objekte / Immutable Objects
+
+Der innere Zustand eines unveränderlichen Objekts bleibt immer konstant, nachdem es erzeugt wurde. Damit ist sichergestellt, dass sich unveränderliche Objekte über die gesamte Lebenszeit gleich verhalten.   
+
+#### Wie kann Unveränderlichkeit erreicht werden?   
+
+- Keine „setter“-Methoden in der API der Klasse zur Verfügung stellen
+- Alle Eigenschaften `final` und `private` setzen
+- Aberben verbieten (Keine Subklassen) – die Klasse als `final` deklarieren (`public final class User`)
+
+Im JDK sind Beispiele für unveränderliche Klassen: `String`, Wrapper-Klassen wie `Integer` und `Long`, `Locale`, …
+
+#### Vorteile
+
+- Einfach zu verwenden und zu testen
+- Automatisch threadsicher und keine Synchronisationsprobleme: Da der innere Zustand nicht verändert werden kann, sehen alle Threads immer das Gleiche.
+- Default-`clone()`-Methode funktioniert, keine eigene Implementierung notwendig
+
+Speziell in Multithread-Umgebungen bieten unveränderliche Objekte den entscheidenden Vorteil der Thread-Sicherheit. Webservices beispielsweise sollten immer threadsicher realisiert sein, da viele Clients gleichzeitig darauf zugreifen können.
+
+ 
