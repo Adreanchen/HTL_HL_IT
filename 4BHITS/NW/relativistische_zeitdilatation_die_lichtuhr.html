@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relativistische Zeitdilatation: Die Lichtuhr</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+        body {
+            font-family: var(--font-sans);
+            background-color: #060913;
+            color: #f1f5f9;
+            overflow-x: hidden;
+        }
+        .font-mono-tech {
+            font-family: var(--font-mono);
+        }
+        /* Custom Range Slider */
+        input[type=range].cosmic-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, #1e293b 0%, #334155 100%);
+            border-radius: 999px;
+            outline: none;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        input[type=range].cosmic-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.8), inset 0 0 4px #ffffff;
+            border: 2px solid #e0f2fe;
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        input[type=range].cosmic-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            background: #7dd3fc;
+        }
+        input[type=range].cosmic-slider::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.8), inset 0 0 4px #ffffff;
+            border: 2px solid #e0f2fe;
+            transition: transform 0.15s ease;
+        }
+        /* Subtle glowing cards */
+        .cosmic-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+        }
+        .cyan-glow-border {
+            border-color: rgba(34, 211, 238, 0.3);
+            box-shadow: 0 0 25px -5px rgba(34, 211, 238, 0.12);
+        }
+        .amber-glow-border {
+            border-color: rgba(245, 158, 11, 0.3);
+            box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.12);
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white">
+
+    <header class="border-b border-slate-800/80 bg-slate-950/60 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500/20 to-amber-500/20 border border-sky-400/30 flex items-center justify-center shadow-inner">
+                    <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white">Relativistische Zeitdilatation: Die Lichtuhr</h1>
+                        <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                            Spezielle Relativitätstheorie
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400">Einsteins Gedankenexperiment der Lichtuhr — Warum bewegte Uhren langsamer gehen</p>
+                </div>
+            </div>
+
+            <!-- Live Quick Formula Pill -->
+            <div class="flex items-center gap-3 self-stretch sm:self-auto justify-between sm:justify-end bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2">
+                <div class="text-xs text-slate-400">
+                    <span class="hidden sm:inline">Lorentz-Faktor </span><span class="font-mono-tech text-slate-300">γ = 1 / √(1 - v²/c²)</span>
+                </div>
+                <div class="h-4 w-px bg-slate-800"></div>
+                <div class="flex items-baseline gap-1.5">
+                    <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">γ =</span>
+                    <span id="header-gamma" class="font-mono-tech text-base sm:text-lg font-bold text-amber-400">1,250</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Interactive Control Deck -->
+        <section class="cosmic-card rounded-2xl p-4 sm:p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                
+                <!-- Play / Pause / Reset & Speed Controls -->
+                <div class="lg:col-span-4 flex flex-wrap sm:flex-nowrap items-center gap-2.5">
+                    <button id="btn-play-pause" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm bg-sky-500 hover:bg-sky-400 text-slate-950 shadow-lg shadow-sky-500/20 transition cursor-pointer">
+                        <svg id="icon-pause" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                        </svg>
+                        <svg id="icon-play" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        <span id="text-play-pause">Pause</span>
+                    </button>
+
+                    <button id="btn-reset" class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-medium text-sm bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer" title="Uhren auf null zurücksetzen">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span>Zurücksetzen</span>
+                    </button>
+
+                    <button id="btn-slowmo" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl font-medium text-xs bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition cursor-pointer" title="Zeitlupe umschalten">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400" id="slowmo-dot"></span>
+                        <span id="slowmo-label">Normal (1,0x)</span>
+                    </button>
+                </div>
+
+                <!-- Velocity Slider (0% to 99% c) -->
+                <div class="lg:col-span-5 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label for="velocity-slider" class="text-xs sm:text-sm font-medium text-slate-300 flex items-center gap-2">
+                            <span>Geschwindigkeit des Raumschiffs (<span class="font-mono-tech text-amber-400">v / c</span>)</span>
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <span id="velocity-readout" class="font-mono-tech text-sm sm:text-base font-bold px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                                0,60 c (60% Lichtgeschw.)
+                            </span>
+                        </div>
+                    </div>
+
+                    <input id="velocity-slider" type="range" min="0" max="99" step="1" value="60" class="cosmic-slider">
+
+                    <!-- Preset Velocity Buttons -->
+                    <div class="flex items-center justify-between gap-1 pt-1">
+                        <span class="text-[11px] text-slate-500">Auswahl:</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button data-v="0" class="preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition cursor-pointer">Ruhend (0%)</button>
+                            <button data-v="50" class="preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition cursor-pointer">50% c</button>
+                            <button data-v="60" class="preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 transition cursor-pointer">60% c</button>
+                            <button data-v="87" class="preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition cursor-pointer" title="γ ≈ 2,0 (Zeit vergeht halb so schnell)">86,6% c (γ = 2)</button>
+                            <button data-v="95" class="preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition cursor-pointer">95% c</button>
+                            <button data-v="99" class="preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition cursor-pointer">99% c (γ ≈ 7,09)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Telemetry Readouts -->
+                <div class="lg:col-span-3 grid grid-cols-2 gap-2.5">
+                    <div class="bg-slate-900/90 border border-slate-800/90 rounded-xl p-3 text-center">
+                        <div class="text-[11px] uppercase tracking-wider text-slate-400">Lorentz-Faktor (γ)</div>
+                        <div id="stat-gamma" class="font-mono-tech text-xl sm:text-2xl font-bold text-amber-400 mt-0.5">1,250</div>
+                        <div id="stat-dilation-desc" class="text-[11px] text-slate-400 mt-0.5">Δt / Δt₀ = 1,25×</div>
+                    </div>
+                    <div class="bg-slate-900/90 border border-slate-800/90 rounded-xl p-3 text-center">
+                        <div class="text-[11px] uppercase tracking-wider text-slate-400">Uhrentakt (Δt₀ / Δt)</div>
+                        <div id="stat-rate" class="font-mono-tech text-xl sm:text-2xl font-bold text-sky-400 mt-0.5">80,0%</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">der ruhenden Lichtuhr</div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Side-by-Side Visualizations -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Left View: Stationary Observer Clock -->
+            <div class="cosmic-card cyan-glow-border rounded-2xl overflow-hidden flex flex-col">
+                <div class="p-4 sm:px-5 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2 bg-slate-900/50">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_10px_#22d3ee]"></span>
+                        <div>
+                            <h2 class="text-sm sm:text-base font-bold text-white">1. Ruhende Lichtuhr (Beobachter)</h2>
+                            <p class="text-xs text-slate-400">Ruhesystem (<span class="font-mono-tech text-cyan-300">v = 0</span>) — Photon pendelt senkrecht auf & ab</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-slate-950/80 border border-cyan-500/30 rounded-xl px-3 py-1.5">
+                        <div class="text-right">
+                            <div class="text-[10px] uppercase tracking-wider text-slate-400">Takte (Ruhend)</div>
+                            <div id="stationary-ticks" class="font-mono-tech text-lg sm:text-xl font-bold text-cyan-400">0</div>
+                        </div>
+                        <div class="h-6 w-px bg-slate-800"></div>
+                        <div class="text-right">
+                            <div class="text-[10px] uppercase tracking-wider text-slate-400">Relativistische Zeit (Δt)</div>
+                            <div id="stationary-time" class="font-mono-tech text-sm font-semibold text-slate-200">0,00 s</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stationary Canvas Container -->
+                <div class="relative h-72 sm:h-80 w-full bg-slate-950/70">
+                    <canvas id="canvas-stationary"></canvas>
+                    <!-- Overlay Legend -->
+                    <div class="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none text-xs">
+                        <span class="px-2.5 py-1 rounded-lg bg-slate-900/85 border border-slate-800 text-slate-300 backdrop-blur-sm">
+                            Senkrechter Lichtweg (<strong class="font-mono-tech text-cyan-400">L₀ = 1,00 d</strong>)
+                        </span>
+                        <span class="px-2.5 py-1 rounded-lg bg-slate-900/85 border border-slate-800 text-slate-300 backdrop-blur-sm">
+                            Lichtgeschwindigkeit: <strong class="font-mono-tech text-white">1,00 c</strong>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right View: Moving Spaceship Clock -->
+            <div class="cosmic-card amber-glow-border rounded-2xl overflow-hidden flex flex-col">
+                <div class="p-4 sm:px-5 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2 bg-slate-900/50">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-3 h-3 rounded-full bg-amber-400 shadow-[0_0_10px_#fbbf24]"></span>
+                        <div>
+                            <h2 class="text-sm sm:text-base font-bold text-white">2. Bewegte Lichtuhr (Raumschiff)</h2>
+                            <p class="text-xs text-slate-400">Bewegtes System (<span id="ship-header-v" class="font-mono-tech text-amber-300">v = 0,60 c</span>) — Längerer diagonaler Lichtweg</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-slate-950/80 border border-amber-500/30 rounded-xl px-3 py-1.5">
+                        <div class="text-right">
+                            <div class="text-[10px] uppercase tracking-wider text-slate-400">Takte (Raumschiff)</div>
+                            <div id="moving-ticks" class="font-mono-tech text-lg sm:text-xl font-bold text-amber-400">0</div>
+                        </div>
+                        <div class="h-6 w-px bg-slate-800"></div>
+                        <div class="text-right">
+                            <div class="text-[10px] uppercase tracking-wider text-slate-400">Eigenzeit (Δt₀)</div>
+                            <div id="moving-time" class="font-mono-tech text-sm font-semibold text-slate-200">0,00 s</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Moving Canvas Container -->
+                <div class="relative h-72 sm:h-80 w-full bg-slate-950/70">
+                    <canvas id="canvas-moving"></canvas>
+                    <!-- Overlay Legend -->
+                    <div class="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none text-xs">
+                        <span class="px-2.5 py-1 rounded-lg bg-slate-900/85 border border-slate-800 text-slate-300 backdrop-blur-sm">
+                            Diagonaler Lichtweg (<strong id="moving-path-length" class="font-mono-tech text-amber-400">L = γ · d = 1,25 d</strong>)
+                        </span>
+                        <span class="px-2.5 py-1 rounded-lg bg-slate-900/85 border border-slate-800 text-slate-300 backdrop-blur-sm">
+                            Lichtgeschwindigkeit: <strong class="font-mono-tech text-white">Weiterhin 1,00 c!</strong>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Live Geometry Proof Card (5 cols) -->
+            <div class="lg:col-span-5 cosmic-card rounded-2xl p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-sky-400">Geometrische Herleitung</span>
+                        <span class="text-xs font-mono-tech text-slate-400">Δt = γ · Δt₀</span>
+                    </div>
+                    <h3 class="text-base font-bold text-white mb-1">Herleitung über den Satz des Pythagoras</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                        Mit <span class="font-mono-tech text-amber-300">(c·Δt)² = (v·Δt)² + (c·Δt₀)²</span> folgt für das Zeitverhältnis <span class="font-mono-tech text-white">Δt = γ · Δt₀</span>, wobei <span class="font-mono-tech text-sky-300">γ = 1 / √(1 - v²/c²)</span>. Da <span class="font-mono-tech text-white">c</span> konstant bleibt, bleibt bei horizontaler Bewegung <span class="font-mono-tech text-amber-400">v</span> weniger vertikale Geschwindigkeitskomponente (<span class="font-mono-tech text-cyan-400">v_y = √(c² - v²)</span>) übrig.
+                    </p>
+                </div>
+
+                <!-- Dynamic SVG Right Triangle -->
+                <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3 flex flex-col sm:flex-row items-center gap-4">
+                    <svg id="triangle-svg" viewBox="0 0 220 155" class="w-48 h-36 shrink-0">
+                        <!-- Grid background -->
+                        <defs>
+                            <pattern id="smallGrid" width="15" height="15" patternUnits="userSpaceOnUse">
+                                <path d="M 15 0 L 0 0 0 15" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="1"/>
+                            </pattern>
+                        </defs>
+                        <rect width="220" height="155" fill="url(#smallGrid)" rx="8"/>
+                        
+                        <!-- Right angle marker -->
+                        <polyline id="tri-right-angle" points="45,115 45,125 55,125" fill="none" stroke="#64748b" stroke-width="1.5"/>
+
+                        <!-- Vertical Leg (Mirror separation c*dt0 = d) -->
+                        <line id="tri-vertical" x1="40" y1="125" x2="40" y2="25" stroke="#22d3ee" stroke-width="3" stroke-linecap="round"/>
+                        
+                        <!-- Horizontal Leg (Ship travel v*dt) -->
+                        <line id="tri-horizontal" x1="40" y1="125" x2="140" y2="125" stroke="#a855f7" stroke-width="3" stroke-linecap="round" stroke-dasharray="4 3"/>
+
+                        <!-- Hypotenuse (Light path c*dt) -->
+                        <line id="tri-hypotenuse" x1="40" y1="125" x2="140" y2="25" stroke="#fbbf24" stroke-width="3.5" stroke-linecap="round"/>
+
+                        <!-- Labels -->
+                        <text id="label-vert" x="34" y="78" fill="#22d3ee" font-size="10" font-family="JetBrains Mono" text-anchor="end" font-weight="600">c·Δt₀</text>
+                        <text id="label-horiz" x="90" y="143" fill="#c084fc" font-size="11" font-family="JetBrains Mono" text-anchor="middle" font-weight="600">v·Δt</text>
+                        <text id="label-hyp" x="102" y="68" fill="#fbbf24" font-size="11" font-family="JetBrains Mono" text-anchor="start" font-weight="700">c·Δt</text>
+                    </svg>
+
+                    <div class="space-y-2 text-xs w-full">
+                        <div class="flex justify-between items-center py-1 border-b border-slate-800/80">
+                            <span class="text-slate-400">Senkrechte Höhe (c·Δt₀):</span>
+                            <span class="font-mono-tech font-semibold text-cyan-400">1,00 d</span>
+                        </div>
+                        <div class="flex justify-between items-center py-1 border-b border-slate-800/80">
+                            <span class="text-slate-400">Horizontale Basis (v·Δt):</span>
+                            <span id="tri-stat-horiz" class="font-mono-tech font-semibold text-purple-400">0,75 d</span>
+                        </div>
+                        <div class="flex justify-between items-center py-1 border-b border-slate-800/80">
+                            <span class="text-slate-400">Hypotenuse (c·Δt):</span>
+                            <span id="tri-stat-hyp" class="font-mono-tech font-semibold text-amber-400">1,25 d</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-1">
+                            <span class="text-slate-400">Vertikale Geschw. (v_y):</span>
+                            <span id="tri-stat-vy" class="font-mono-tech font-bold text-emerald-400">0,80 c</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3 Concise Explanatory Cards (7 cols) -->
+            <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                
+                <!-- Card 1 -->
+                <div class="cosmic-card rounded-2xl p-5 flex flex-col justify-between border-t-2 border-t-cyan-400">
+                    <div>
+                        <div class="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-mono-tech font-bold text-sm mb-3">
+                            01
+                        </div>
+                        <h3 class="text-sm font-bold text-white mb-2">1. Konstanz der Lichtgeschwindigkeit</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Licht bewegt sich im Vakuum für jeden Beobachter <strong>exakt gleich schnell (<span class="font-mono-tech text-cyan-300">c</span> ≈ 299.792 km/s)</strong>, unabhängig von der Bewegung der Lichtquelle oder des Bezugssystems.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/80 text-[11px] font-mono-tech text-cyan-400">
+                        Lichtgeschwindigkeit = 1,00 c (immer)
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="cosmic-card rounded-2xl p-5 flex flex-col justify-between border-t-2 border-t-amber-400">
+                    <div>
+                        <div class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 font-mono-tech font-bold text-sm mb-3">
+                            02
+                        </div>
+                        <h3 class="text-sm font-bold text-white mb-2">2. Längerer Lichtweg</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Von außen betrachtet muss das Photon in der bewegten Uhr einen <strong>längeren diagonalen Zickzack-Weg</strong> (<span class="font-mono-tech text-amber-300">L = γ · d</span>) zwischen den Spiegeln zurücklegen als im Ruhesystem (<span class="font-mono-tech text-cyan-300">L₀ = d</span>).
+                        </p>
+                    </div>
+                    <div id="card-path-comparison" class="mt-4 pt-3 border-t border-slate-800/80 text-[11px] font-mono-tech text-amber-400">
+                        Lichtweg 25,0% länger bei 0,60 c
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="cosmic-card rounded-2xl p-5 flex flex-col justify-between border-t-2 border-t-purple-400">
+                    <div>
+                        <div class="w-8 h-8 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 font-mono-tech font-bold text-sm mb-3">
+                            03
+                        </div>
+                        <h3 class="text-sm font-bold text-white mb-2">3. Verlangsamter Uhrentakt</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Da die Lichtgeschwindigkeit <span class="font-mono-tech text-white">c</span> konstant bleibt, braucht das Photon für den längeren Weg mehr Zeit – die bewegte Uhr tickt langsamer (<strong>„Bewegte Uhren gehen langsamer“</strong>).
+                        </p>
+                    </div>
+                    <div id="card-time-comparison" class="mt-4 pt-3 border-t border-slate-800/80 text-[11px] font-mono-tech text-purple-300">
+                        Δt = 1,25 × Δt₀
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950/60 py-4 px-4 text-center text-xs text-slate-500">
+        Interaktive Physik-Simulation • Nutze den Schieberegler oder die Schnellauswahl oben, um Geschwindigkeiten von 0% c (Ruhesystem) bis 99% c zu erkunden.
+    </footer>
+
+    <script>
+        (function () {
+            // Helper for German decimal formatting
+            function fmtDE(num, decimals) {
+                return Number(num).toFixed(decimals).replace('.', ',');
+            }
+
+            // --- Simulation State ---
+            const state = {
+                isRunning: true,
+                simSpeedMultiplier: 1.0, // 1.0x or 0.35x slow-mo
+                beta: 0.60,              // v / c (0.00 to 0.99)
+                gamma: 1.25,             // 1 / sqrt(1 - beta^2)
+                stationaryTime: 0,       // Measured in "ticks" (1 tick = 1 bounce from mirror to mirror)
+                movingTime: 0,           // Measured in ship ticks (stationaryTime / gamma)
+                lastFrameTimestamp: null,
+                baseTicksPerSecond: 1.15, // Stationary clock ticks per real-time second at 1x speed
+                stationaryPulses: [],    // Impact ring animations on mirrors
+                movingPulses: [],
+                lastStatTickCount: 0,
+                lastMoveTickCount: 0,
+                stars: []
+            };
+
+            // Generate starfield for canvases
+            for (let i = 0; i < 45; i++) {
+                state.stars.push({
+                    x: Math.random(),
+                    y: Math.random(),
+                    r: Math.random() * 1.3 + 0.4,
+                    alpha: Math.random() * 0.6 + 0.2
+                });
+            }
+
+            // --- DOM Elements ---
+            const slider = document.getElementById('velocity-slider');
+            const velocityReadout = document.getElementById('velocity-readout');
+            const headerGamma = document.getElementById('header-gamma');
+            const statGamma = document.getElementById('stat-gamma');
+            const statDilationDesc = document.getElementById('stat-dilation-desc');
+            const statRate = document.getElementById('stat-rate');
+            const shipHeaderV = document.getElementById('ship-header-v');
+            const movingPathLength = document.getElementById('moving-path-length');
+
+            const stationaryTicksEl = document.getElementById('stationary-ticks');
+            const stationaryTimeEl = document.getElementById('stationary-time');
+            const movingTicksEl = document.getElementById('moving-ticks');
+            const movingTimeEl = document.getElementById('moving-time');
+
+            const btnPlayPause = document.getElementById('btn-play-pause');
+            const iconPause = document.getElementById('icon-pause');
+            const iconPlay = document.getElementById('icon-play');
+            const textPlayPause = document.getElementById('text-play-pause');
+            const btnReset = document.getElementById('btn-reset');
+            const btnSlowmo = document.getElementById('btn-slowmo');
+            const slowmoDot = document.getElementById('slowmo-dot');
+            const slowmoLabel = document.getElementById('slowmo-label');
+            const presetBtns = document.querySelectorAll('.preset-btn');
+
+            // Triangle & Card Elements
+            const triVertical = document.getElementById('tri-vertical');
+            const triHorizontal = document.getElementById('tri-horizontal');
+            const triHypotenuse = document.getElementById('tri-hypotenuse');
+            const triRightAngle = document.getElementById('tri-right-angle');
+            const labelHoriz = document.getElementById('label-horiz');
+            const labelHyp = document.getElementById('label-hyp');
+            const triStatHoriz = document.getElementById('tri-stat-horiz');
+            const triStatHyp = document.getElementById('tri-stat-hyp');
+            const triStatVy = document.getElementById('tri-stat-vy');
+            const cardPathComp = document.getElementById('card-path-comparison');
+            const cardTimeComp = document.getElementById('card-time-comparison');
+
+            // Canvases
+            const canvasStat = document.getElementById('canvas-stationary');
+            const ctxStat = canvasStat.getContext('2d');
+            const canvasMove = document.getElementById('canvas-moving');
+            const ctxMove = canvasMove.getContext('2d');
+
+            function updateRelativisticParameters(betaPercent) {
+                const clampedPercent = Math.max(0, Math.min(99, Number(betaPercent)));
+                state.beta = clampedPercent / 100;
+
+                // Keep clock phase continuous when user drags slider
+                const currentMovePhase = state.movingTime;
+                state.gamma = 1 / Math.sqrt(1 - state.beta * state.beta);
+                state.movingTime = currentMovePhase;
+                state.stationaryTime = state.movingTime * state.gamma;
+
+                // Format numbers with German comma
+                const gammaStr = fmtDE(state.gamma, 3);
+                const ratePercent = fmtDE((1 / state.gamma) * 100, 1);
+                const vyFactor = Math.sqrt(1 - state.beta * state.beta);
+                const horizShift = state.beta * state.gamma; // (v * dt) / d
+
+                // Update Header & Telemetry
+                velocityReadout.textContent = `${fmtDE(state.beta, 2)} c (${clampedPercent}% Lichtgeschw.)`;
+                headerGamma.textContent = gammaStr;
+                statGamma.textContent = gammaStr;
+                statDilationDesc.textContent = state.beta === 0
+                    ? 'Δt / Δt₀ = 1,00× (synchron)'
+                    : `Δt / Δt₀ = ${fmtDE(state.gamma, 2)}× langsamer`;
+                statRate.textContent = `${ratePercent}%`;
+                shipHeaderV.textContent = `v = ${fmtDE(state.beta, 2)} c`;
+                movingPathLength.textContent = `L = γ · d = ${fmtDE(state.gamma, 2)} d`;
+
+                // Update Preset Button Highlights
+                presetBtns.forEach(btn => {
+                    const v = Number(btn.getAttribute('data-v'));
+                    if (v === clampedPercent) {
+                        btn.className = 'preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 transition cursor-pointer';
+                    } else {
+                        btn.className = 'preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition cursor-pointer';
+                    }
+                });
+
+                // Update Explanatory Cards
+                const longerPct = fmtDE((state.gamma - 1) * 100, 1);
+                cardPathComp.textContent = state.beta === 0
+                    ? 'Lichtweg 0% länger bei 0,00 c'
+                    : `Lichtweg ${longerPct}% länger bei ${fmtDE(state.beta, 2)} c`;
+                cardTimeComp.textContent = `Δt = ${fmtDE(state.gamma, 2)} × Δt₀`;
+
+                // Update SVG Light Triangle
+                triStatHoriz.textContent = `${fmtDE(horizShift, 2)} d`;
+                triStatHyp.textContent = `${fmtDE(state.gamma, 2)} d`;
+                triStatVy.textContent = `${fmtDE(vyFactor, 2)} c`;
+
+                // Scale triangle legs cleanly inside SVG (220x155)
+                const baseX = 40;
+                const baseY = 125;
+                const vertPx = 95;
+                // Map beta (0..0.99) to horizontal pixel width (0..150)
+                const horizPx = state.beta * 150;
+                const topX = baseX + horizPx;
+                const topY = baseY - vertPx;
+
+                triVertical.setAttribute('x1', baseX);
+                triVertical.setAttribute('y1', baseY);
+                triVertical.setAttribute('x2', baseX);
+                triVertical.setAttribute('y2', topY);
+
+                triHorizontal.setAttribute('x1', baseX);
+                triHorizontal.setAttribute('y1', baseY);
+                triHorizontal.setAttribute('x2', topX);
+                triHorizontal.setAttribute('y2', baseY);
+
+                triHypotenuse.setAttribute('x1', baseX);
+                triHypotenuse.setAttribute('y1', baseY);
+                triHypotenuse.setAttribute('x2', topX);
+                triHypotenuse.setAttribute('y2', topY);
+
+                triRightAngle.style.opacity = state.beta > 0.05 ? '1' : '0';
+                labelHoriz.setAttribute('x', baseX + horizPx / 2);
+                labelHoriz.style.opacity = state.beta > 0.08 ? '1' : '0';
+                labelHyp.setAttribute('x', baseX + horizPx / 2 + 10);
+                labelHyp.setAttribute('y', baseY - vertPx / 2 - 4);
+            }
+
+            function resizeCanvases() {
+                const dpr = window.devicePixelRatio || 1;
+                [canvasStat, canvasMove].forEach(canvas => {
+                    const rect = canvas.parentElement.getBoundingClientRect();
+                    canvas.width = rect.width * dpr;
+                    canvas.height = rect.height * dpr;
+                    const ctx = canvas.getContext('2d');
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                });
+            }
+
+            // Helper: Triangle wave on [0, 1] with period 2 (0 -> 1 -> 0)
+            function bounceWave(t) {
+                const mod = ((t % 2) + 2) % 2;
+                return mod <= 1 ? mod : 2 - mod;
+            }
+
+            function drawStationaryClock() {
+                const width = canvasStat.parentElement.clientWidth;
+                const height = canvasStat.parentElement.clientHeight;
+                ctxStat.clearRect(0, 0, width, height);
+
+                // Subtle background stars
+                state.stars.forEach(s => {
+                    ctxStat.fillStyle = `rgba(148, 163, 184, ${s.alpha * 0.5})`;
+                    ctxStat.beginPath();
+                    ctxStat.arc(s.x * width, s.y * height, s.r, 0, Math.PI * 2);
+                    ctxStat.fill();
+                });
+
+                // Background coordinate grid
+                ctxStat.strokeStyle = 'rgba(51, 65, 85, 0.25)';
+                ctxStat.lineWidth = 1;
+                const gridSize = 32;
+                for (let x = (width / 2) % gridSize; x < width; x += gridSize) {
+                    ctxStat.beginPath();
+                    ctxStat.moveTo(x, 0);
+                    ctxStat.lineTo(x, height);
+                    ctxStat.stroke();
+                }
+                for (let y = 24; y < height; y += gridSize) {
+                    ctxStat.beginPath();
+                    ctxStat.moveTo(0, y);
+                    ctxStat.lineTo(width, y);
+                    ctxStat.stroke();
+                }
+
+                const centerX = width * 0.5;
+                const topMirrorY = 46;
+                const bottomMirrorY = height - 62;
+                const mirrorDist = bottomMirrorY - topMirrorY;
+                const mirrorWidth = 84;
+                const mirrorHeight = 10;
+
+                // Vertical guide line (Path L0 = d)
+                ctxStat.save();
+                ctxStat.setLineDash([5, 5]);
+                ctxStat.strokeStyle = 'rgba(34, 211, 238, 0.35)';
+                ctxStat.lineWidth = 2;
+                ctxStat.beginPath();
+                ctxStat.moveTo(centerX, topMirrorY);
+                ctxStat.lineTo(centerX, bottomMirrorY);
+                ctxStat.stroke();
+                ctxStat.restore();
+
+                // Dimension label for d
+                ctxStat.fillStyle = 'rgba(148, 163, 184, 0.7)';
+                ctxStat.font = '500 11px "JetBrains Mono", monospace';
+                ctxStat.textAlign = 'right';
+                ctxStat.fillText('Spiegelabstand = d', centerX - 52, (topMirrorY + bottomMirrorY) / 2 + 4);
+
+                // Clock frame struts
+                ctxStat.strokeStyle = 'rgba(71, 85, 105, 0.45)';
+                ctxStat.lineWidth = 2;
+                ctxStat.beginPath();
+                ctxStat.moveTo(centerX - mirrorWidth / 2 + 6, topMirrorY);
+                ctxStat.lineTo(centerX - mirrorWidth / 2 + 6, bottomMirrorY);
+                ctxStat.moveTo(centerX + mirrorWidth / 2 - 6, topMirrorY);
+                ctxStat.lineTo(centerX + mirrorWidth / 2 - 6, bottomMirrorY);
+                ctxStat.stroke();
+
+                // Top & Bottom Mirrors
+                drawMirror(ctxStat, centerX, topMirrorY - mirrorHeight / 2, mirrorWidth, mirrorHeight, '#22d3ee');
+                drawMirror(ctxStat, centerX, bottomMirrorY + mirrorHeight / 2, mirrorWidth, mirrorHeight, '#22d3ee');
+
+                // Calculate Photon Y Position
+                const normY = bounceWave(state.stationaryTime); // 0 at bottom, 1 at top
+                const photonY = bottomMirrorY - normY * mirrorDist;
+
+                // Draw glowing trail behind stationary photon
+                const goingUp = (state.stationaryTime % 2) < 1;
+                const trailLen = 36;
+                const trailStartY = goingUp
+                    ? Math.min(bottomMirrorY, photonY + trailLen)
+                    : Math.max(topMirrorY, photonY - trailLen);
+
+                const trailGrad = ctxStat.createLinearGradient(centerX, trailStartY, centerX, photonY);
+                trailGrad.addColorStop(0, 'rgba(34, 211, 238, 0)');
+                trailGrad.addColorStop(1, 'rgba(34, 211, 238, 0.85)');
+                ctxStat.strokeStyle = trailGrad;
+                ctxStat.lineWidth = 5;
+                ctxStat.lineCap = 'round';
+                ctxStat.beginPath();
+                ctxStat.moveTo(centerX, trailStartY);
+                ctxStat.lineTo(centerX, photonY);
+                ctxStat.stroke();
+
+                // Draw Mirror Bounce Pulses
+                drawPulses(ctxStat, state.stationaryPulses, '#22d3ee');
+
+                // Draw Photon Particle
+                drawPhoton(ctxStat, centerX, photonY, '#22d3ee', '#ecfeff');
+            }
+
+            function drawMovingClock() {
+                const width = canvasMove.parentElement.clientWidth;
+                const height = canvasMove.parentElement.clientHeight;
+                ctxMove.clearRect(0, 0, width, height);
+
+                // Subtle background stars
+                state.stars.forEach(s => {
+                    ctxMove.fillStyle = `rgba(148, 163, 184, ${s.alpha * 0.5})`;
+                    ctxMove.beginPath();
+                    ctxMove.arc(s.x * width, s.y * height, s.r, 0, Math.PI * 2);
+                    ctxMove.fill();
+                });
+
+                // Background coordinate grid
+                ctxMove.strokeStyle = 'rgba(51, 65, 85, 0.25)';
+                ctxMove.lineWidth = 1;
+                const gridSize = 32;
+                for (let x = 0; x < width; x += gridSize) {
+                    ctxMove.beginPath();
+                    ctxMove.moveTo(x, 0);
+                    ctxMove.lineTo(x, height);
+                    ctxMove.stroke();
+                }
+                for (let y = 24; y < height; y += gridSize) {
+                    ctxMove.beginPath();
+                    ctxMove.moveTo(0, y);
+                    ctxMove.lineTo(width, y);
+                    ctxMove.stroke();
+                }
+
+                const topMirrorY = 46;
+                const bottomMirrorY = height - 62;
+                const mirrorDist = bottomMirrorY - topMirrorY;
+                const mirrorWidth = 76;
+                const mirrorHeight = 10;
+
+                // In physical space, during 1 stationary tick (vertical distance = mirrorDist),
+                // light travels distance mirrorDist.
+                // So horizontal ship velocity in pixels per stationary tick is beta * mirrorDist!
+                // However, to keep the sawtooth wave nicely visible inside the canvas at extreme gamma (like 99% c),
+                // we use a smooth visual horizontal scale so the ship traverses the viewport gracefully.
+                const pxPerStatTick = state.beta * mirrorDist * 0.55;
+                const marginX = 58;
+                const trackWidth = Math.max(120, width - marginX * 2);
+
+                const totalDistancePx = state.stationaryTime * pxPerStatTick;
+                const cycleIndex = trackWidth > 0 ? Math.floor(totalDistancePx / trackWidth) : 0;
+                const cycleStartStatTime = pxPerStatTick > 0 ? (cycleIndex * trackWidth) / pxPerStatTick : 0;
+
+                // Current X position of the moving spaceship
+                const shipX = state.beta === 0
+                    ? width * 0.5
+                    : marginX + (totalDistancePx % trackWidth);
+
+                // Draw Ghost Reference Clocks along the track when moving
+                if (state.beta > 0.01) {
+                    ctxMove.save();
+                    ctxMove.strokeStyle = 'rgba(148, 163, 184, 0.12)';
+                    ctxMove.setLineDash([3, 4]);
+                    const startBounce = Math.ceil(cycleStartStatTime / state.gamma);
+                    const currentBounce = Math.floor(state.movingTime);
+                    for (let b = startBounce; b <= currentBounce; b++) {
+                        const bounceStatTime = b * state.gamma;
+                        const bx = marginX + (bounceStatTime - cycleStartStatTime) * pxPerStatTick;
+                        if (bx >= marginX && bx <= width - marginX) {
+                            ctxMove.beginPath();
+                            ctxMove.moveTo(bx, topMirrorY);
+                            ctxMove.lineTo(bx, bottomMirrorY);
+                            ctxMove.stroke();
+
+                            // Small vertex dot at bounce point
+                            const by = (b % 2 === 0) ? bottomMirrorY : topMirrorY;
+                            ctxMove.fillStyle = 'rgba(251, 191, 36, 0.45)';
+                            ctxMove.beginPath();
+                            ctxMove.arc(bx, by, 3.5, 0, Math.PI * 2);
+                            ctxMove.fill();
+                        }
+                    }
+                    ctxMove.restore();
+                }
+
+                // Draw Complete Diagonal Sawtooth Path from cycleStartStatTime up to current stationaryTime
+                ctxMove.save();
+                ctxMove.strokeStyle = 'rgba(251, 191, 36, 0.75)';
+                ctxMove.lineWidth = 2.5;
+                ctxMove.lineJoin = 'round';
+                ctxMove.lineCap = 'round';
+                ctxMove.shadowColor = 'rgba(245, 158, 11, 0.5)';
+                ctxMove.shadowBlur = 8;
+
+                ctxMove.beginPath();
+                if (state.beta === 0) {
+                    ctxMove.setLineDash([5, 5]);
+                    ctxMove.strokeStyle = 'rgba(251, 191, 36, 0.35)';
+                    ctxMove.moveTo(shipX, topMirrorY);
+                    ctxMove.lineTo(shipX, bottomMirrorY);
+                } else {
+                    const steps = 90;
+                    for (let i = 0; i <= steps; i++) {
+                        const tStat = cycleStartStatTime + (state.stationaryTime - cycleStartStatTime) * (i / steps);
+                        const tMove = tStat / state.gamma;
+                        const x = marginX + (tStat - cycleStartStatTime) * pxPerStatTick;
+                        const y = bottomMirrorY - bounceWave(tMove) * mirrorDist;
+                        if (i === 0) {
+                            ctxMove.moveTo(x, y);
+                        } else {
+                            ctxMove.lineTo(x, y);
+                        }
+                    }
+                }
+                ctxMove.stroke();
+                ctxMove.restore();
+
+                // Draw Moving Spaceship Casing & Mirrors at shipX
+                ctxMove.save();
+                // Translucent spaceship hull
+                ctxMove.fillStyle = 'rgba(30, 41, 59, 0.35)';
+                ctxMove.strokeStyle = 'rgba(245, 158, 11, 0.28)';
+                ctxMove.lineWidth = 1.5;
+                ctxMove.beginPath();
+                ctxMove.roundRect(
+                    shipX - mirrorWidth / 2 - 6,
+                    topMirrorY - mirrorHeight,
+                    mirrorWidth + 12,
+                    mirrorDist + mirrorHeight * 2,
+                    12
+                );
+                ctxMove.fill();
+                ctxMove.stroke();
+
+                // Velocity Vector Arrow on Spaceship
+                if (state.beta > 0) {
+                    const arrowY = (topMirrorY + bottomMirrorY) / 2;
+                    const arrowStartX = shipX + mirrorWidth / 2 + 10;
+                    const arrowLen = 18 + state.beta * 26;
+                    ctxMove.strokeStyle = '#fbbf24';
+                    ctxMove.fillStyle = '#fbbf24';
+                    ctxMove.lineWidth = 2;
+                    ctxMove.beginPath();
+                    ctxMove.moveTo(arrowStartX, arrowY);
+                    ctxMove.lineTo(arrowStartX + arrowLen, arrowY);
+                    ctxMove.stroke();
+
+                    ctxMove.beginPath();
+                    ctxMove.moveTo(arrowStartX + arrowLen + 5, arrowY);
+                    ctxMove.lineTo(arrowStartX + arrowLen - 3, arrowY - 4);
+                    ctxMove.lineTo(arrowStartX + arrowLen - 3, arrowY + 4);
+                    ctxMove.closePath();
+                    ctxMove.fill();
+
+                    ctxMove.font = '600 10px "JetBrains Mono", monospace';
+                    ctxMove.textAlign = 'left';
+                    ctxMove.fillText(`v=${fmtDE(state.beta, 2)}c`, arrowStartX, arrowY - 7);
+                }
+                ctxMove.restore();
+
+                // Draw Top & Bottom Spaceship Mirrors
+                drawMirror(ctxMove, shipX, topMirrorY - mirrorHeight / 2, mirrorWidth, mirrorHeight, '#fbbf24');
+                drawMirror(ctxMove, shipX, bottomMirrorY + mirrorHeight / 2, mirrorWidth, mirrorHeight, '#fbbf24');
+
+                // Calculate Moving Photon Y Position
+                const normMoveY = bounceWave(state.movingTime);
+                const movePhotonY = bottomMirrorY - normMoveY * mirrorDist;
+
+                // Draw Mirror Bounce Pulses
+                drawPulses(ctxMove, state.movingPulses, '#fbbf24');
+
+                // Draw Moving Photon Particle
+                drawPhoton(ctxMove, shipX, movePhotonY, '#fbbf24', '#fffbeb');
+            }
+
+            function drawMirror(ctx, cx, cy, w, h, glowColor) {
+                ctx.save();
+                ctx.shadowColor = glowColor;
+                ctx.shadowBlur = 10;
+                const grad = ctx.createLinearGradient(cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2);
+                grad.addColorStop(0, '#475569');
+                grad.addColorStop(0.5, '#cbd5e1');
+                grad.addColorStop(1, '#475569');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.roundRect(cx - w / 2, cy - h / 2, w, h, 4);
+                ctx.fill();
+
+                // Reflective highlight line
+                ctx.strokeStyle = glowColor;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(cx - w / 2 + 4, cy);
+                ctx.lineTo(cx + w / 2 - 4, cy);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            function drawPhoton(ctx, x, y, outerColor, coreColor) {
+                ctx.save();
+                // Outer radial halo
+                const radGrad = ctx.createRadialGradient(x, y, 2, x, y, 18);
+                radGrad.addColorStop(0, outerColor);
+                radGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = radGrad;
+                ctx.beginPath();
+                ctx.arc(x, y, 18, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Bright core
+                ctx.shadowColor = outerColor;
+                ctx.shadowBlur = 12;
+                ctx.fillStyle = coreColor;
+                ctx.beginPath();
+                ctx.arc(x, y, 5.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            function drawPulses(ctx, pulses, color) {
+                for (let i = pulses.length - 1; i >= 0; i--) {
+                    const p = pulses[i];
+                    p.age += 0.04;
+                    if (p.age >= 1) {
+                        pulses.splice(i, 1);
+                        continue;
+                    }
+                    ctx.save();
+                    ctx.strokeStyle = color;
+                    ctx.globalAlpha = 1 - p.age;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.ellipse(p.x, p.y, 8 + p.age * 26, 3 + p.age * 8, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            function animate(timestamp) {
+                if (!state.lastFrameTimestamp) {
+                    state.lastFrameTimestamp = timestamp;
+                }
+                const dtSeconds = Math.min(0.1, (timestamp - state.lastFrameTimestamp) / 1000);
+                state.lastFrameTimestamp = timestamp;
+
+                if (state.isRunning) {
+                    const deltaStatTicks = dtSeconds * state.baseTicksPerSecond * state.simSpeedMultiplier;
+                    state.stationaryTime += deltaStatTicks;
+                    state.movingTime = state.stationaryTime / state.gamma;
+
+                    const statTicksInt = Math.floor(state.stationaryTime);
+                    const moveTicksInt = Math.floor(state.movingTime);
+
+                    // Spawn mirror impact ripple when stationary clock ticks
+                    if (statTicksInt > state.lastStatTickCount) {
+                        state.lastStatTickCount = statTicksInt;
+                        const w = canvasStat.parentElement.clientWidth;
+                        const h = canvasStat.parentElement.clientHeight;
+                        const y = (statTicksInt % 2 === 1) ? 46 : h - 62;
+                        state.stationaryPulses.push({ x: w * 0.5, y, age: 0 });
+                    }
+
+                    // Spawn mirror impact ripple when moving spaceship clock ticks
+                    if (moveTicksInt > state.lastMoveTickCount) {
+                        state.lastMoveTickCount = moveTicksInt;
+                        const w = canvasMove.parentElement.clientWidth;
+                        const h = canvasMove.parentElement.clientHeight;
+                        const topMirrorY = 46;
+                        const bottomMirrorY = h - 62;
+                        const mirrorDist = bottomMirrorY - topMirrorY;
+                        const pxPerStatTick = state.beta * mirrorDist * 0.55;
+                        const marginX = 58;
+                        const trackWidth = Math.max(120, w - marginX * 2);
+                        const totalDistancePx = state.stationaryTime * pxPerStatTick;
+                        const shipX = state.beta === 0 ? w * 0.5 : marginX + (totalDistancePx % trackWidth);
+                        const y = (moveTicksInt % 2 === 1) ? topMirrorY : bottomMirrorY;
+                        state.movingPulses.push({ x: shipX, y, age: 0 });
+                    }
+
+                    // Update Live Counter Readouts
+                    stationaryTicksEl.textContent = statTicksInt;
+                    stationaryTimeEl.textContent = `${fmtDE(state.stationaryTime, 2)} s`;
+                    movingTicksEl.textContent = moveTicksInt;
+                    movingTimeEl.textContent = `${fmtDE(state.movingTime, 2)} s`;
+                }
+
+                drawStationaryClock();
+                drawMovingClock();
+
+                requestAnimationFrame(animate);
+            }
+
+            slider.addEventListener('input', (e) => {
+                updateRelativisticParameters(e.target.value);
+            });
+
+            presetBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const v = btn.getAttribute('data-v');
+                    slider.value = v;
+                    updateRelativisticParameters(v);
+                });
+            });
+
+            btnPlayPause.addEventListener('click', () => {
+                state.isRunning = !state.isRunning;
+                if (state.isRunning) {
+                    iconPause.classList.remove('hidden');
+                    iconPlay.classList.add('hidden');
+                    textPlayPause.textContent = 'Pause';
+                } else {
+                    iconPause.classList.add('hidden');
+                    iconPlay.classList.remove('hidden');
+                    textPlayPause.textContent = 'Start';
+                }
+            });
+
+            btnReset.addEventListener('click', () => {
+                state.stationaryTime = 0;
+                state.movingTime = 0;
+                state.lastStatTickCount = 0;
+                state.lastMoveTickCount = 0;
+                state.stationaryPulses = [];
+                state.movingPulses = [];
+                stationaryTicksEl.textContent = '0';
+                stationaryTimeEl.textContent = '0,00 s';
+                movingTicksEl.textContent = '0';
+                movingTimeEl.textContent = '0,00 s';
+            });
+
+            btnSlowmo.addEventListener('click', () => {
+                if (state.simSpeedMultiplier === 1.0) {
+                    state.simSpeedMultiplier = 0.35;
+                    slowmoLabel.textContent = 'Zeitlupe (0,35x)';
+                    slowmoDot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+                } else {
+                    state.simSpeedMultiplier = 1.0;
+                    slowmoLabel.textContent = 'Normal (1,0x)';
+                    slowmoDot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                resizeCanvases();
+                drawStationaryClock();
+                drawMovingClock();
+            });
+
+            window.onload = function () {
+                resizeCanvases();
+                updateRelativisticParameters(slider.value);
+                requestAnimationFrame(animate);
+            };
+        })();
+    </script>
+</body>
+</html>

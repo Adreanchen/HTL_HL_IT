@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relativistische Längenkontraktion (Lorentz-Kontraktion)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+        body {
+            font-family: var(--font-sans);
+            background-color: #060913;
+            color: #f1f5f9;
+            overflow-x: hidden;
+        }
+        .font-mono-tech {
+            font-family: var(--font-mono);
+        }
+        /* Custom Range Slider */
+        input[type=range].cosmic-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, #1e293b 0%, #334155 100%);
+            border-radius: 999px;
+            outline: none;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        input[type=range].cosmic-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.8), inset 0 0 4px #ffffff;
+            border: 2px solid #e0f2fe;
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        input[type=range].cosmic-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            background: #7dd3fc;
+        }
+        input[type=range].cosmic-slider::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.8), inset 0 0 4px #ffffff;
+            border: 2px solid #e0f2fe;
+            transition: transform 0.15s ease;
+        }
+        /* Subtle glowing cards */
+        .cosmic-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+        }
+        .cyan-glow-border {
+            border-color: rgba(34, 211, 238, 0.3);
+            box-shadow: 0 0 25px -5px rgba(34, 211, 238, 0.12);
+        }
+        .amber-glow-border {
+            border-color: rgba(245, 158, 11, 0.3);
+            box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.12);
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800/80 bg-slate-950/60 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500/20 to-amber-500/20 border border-sky-400/30 flex items-center justify-center shadow-inner">
+                    <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white">Relativistische Längenkontraktion (Lorentz-Kontraktion)</h1>
+                        <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                            Spezielle Relativitätstheorie
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400">Warum bewegte Objekte in Bewegungsrichtung verkürzt erscheinen (<span class="font-mono-tech text-amber-300">L = L₀ / γ</span>)</p>
+                </div>
+            </div>
+
+            <!-- Live Quick Formula Pill -->
+            <div class="flex items-center gap-3 self-stretch sm:self-auto justify-between sm:justify-end bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2">
+                <div class="text-xs text-slate-400">
+                    <span class="hidden sm:inline">Kontraktionsformel </span><span class="font-mono-tech text-slate-300">L = L₀ · √(1 - v²/c²)</span>
+                </div>
+                <div class="h-4 w-px bg-slate-800"></div>
+                <div class="flex items-baseline gap-1.5">
+                    <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">L / L₀ =</span>
+                    <span id="header-ratio" class="font-mono-tech text-base sm:text-lg font-bold text-amber-400">80,0%</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Mode Selector & Interactive Control Deck -->
+        <section class="cosmic-card rounded-2xl p-4 sm:p-6 space-y-5">
+            
+            <!-- Top Row: Mode Switcher Tabs + Grid Toggle -->
+            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pb-4 border-b border-slate-800/80">
+                <div class="inline-flex p-1 rounded-xl bg-slate-900/95 border border-slate-800">
+                    <button id="tab-mode-ship" class="flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        <span>Modus 1: Raumschiff-Abmessung (L₀ = 100 m)</span>
+                    </button>
+                    <button id="tab-mode-journey" class="flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 text-slate-300 hover:text-white cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>Modus 2: Interstellare Reise (Erde → Proxima Centauri)</span>
+                    </button>
+                </div>
+
+                <div class="flex items-center justify-between sm:justify-end gap-2.5">
+                    <button id="btn-toggle-grid" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium bg-sky-500/15 text-sky-300 border border-sky-500/30 hover:bg-sky-500/25 transition cursor-pointer">
+                        <span id="grid-dot" class="w-2 h-2 rounded-full bg-sky-400"></span>
+                        <span>Messgitter & Maßstab: AN</span>
+                    </button>
+                    <button id="btn-laser-pulse" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition cursor-pointer" title="Gleichzeitige Laser-Abtastung von Bug und Heck auslösen">
+                        <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                        <span>Laser-Messung blitzen</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bottom Row: Playback Controls, Velocity Slider, Telemetry -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                
+                <!-- Play / Pause / Reset & Speed Controls -->
+                <div class="lg:col-span-4 flex flex-wrap sm:flex-nowrap items-center gap-2.5">
+                    <button id="btn-play-pause" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm bg-sky-500 hover:bg-sky-400 text-slate-950 shadow-lg shadow-sky-500/20 transition cursor-pointer">
+                        <svg id="icon-pause" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                        </svg>
+                        <svg id="icon-play" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        <span id="text-play-pause">Pause</span>
+                    </button>
+
+                    <button id="btn-reset" class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-medium text-sm bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer" title="Simulation zurücksetzen">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span>Zurücksetzen</span>
+                    </button>
+
+                    <button id="btn-slowmo" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl font-medium text-xs bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition cursor-pointer" title="Zeitlupe umschalten">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400" id="slowmo-dot"></span>
+                        <span id="slowmo-label">Normal (1,0x)</span>
+                    </button>
+                </div>
+
+                <!-- Velocity Slider (0% to 99.5% c) -->
+                <div class="lg:col-span-5 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label for="velocity-slider" class="text-xs sm:text-sm font-medium text-slate-300 flex items-center gap-2">
+                            <span>Relativgeschwindigkeit (<span class="font-mono-tech text-amber-400">v / c</span>)</span>
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <span id="velocity-readout" class="font-mono-tech text-sm sm:text-base font-bold px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                                0,600 c (60,0% Lichtgeschw.)
+                            </span>
+                        </div>
+                    </div>
+
+                    <input id="velocity-slider" type="range" min="0" max="99.5" step="0.1" value="60" class="cosmic-slider">
+
+                    <!-- Preset Velocity Buttons -->
+                    <div class="flex items-center justify-between gap-1 pt-1">
+                        <span class="text-[11px] text-slate-500">Auswahl:</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button data-v="0" class="preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition cursor-pointer">0% c (100%)</button>
+                            <button data-v="60" class="preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 transition cursor-pointer">60% c (80%)</button>
+                            <button data-v="86.6" class="preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition cursor-pointer" title="γ = 2,00 (Halbe Länge)">86,6% c (50%)</button>
+                            <button data-v="95" class="preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition cursor-pointer">95% c (31,2%)</button>
+                            <button data-v="99" class="preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition cursor-pointer">99% c (14,1%)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Telemetry Readouts (4 Compact Metrics in 2x2 or 2-col) -->
+                <div class="lg:col-span-3 grid grid-cols-2 gap-2.5">
+                    <div class="bg-slate-900/90 border border-slate-800/90 rounded-xl p-3 text-center">
+                        <div class="text-[11px] uppercase tracking-wider text-slate-400">Lorentz-Faktor (γ)</div>
+                        <div id="stat-gamma" class="font-mono-tech text-xl sm:text-2xl font-bold text-amber-400 mt-0.5">1,250</div>
+                        <div id="stat-stauchung" class="text-[11px] text-slate-400 mt-0.5">Stauchung: -20,0%</div>
+                    </div>
+                    <div class="bg-slate-900/90 border border-slate-800/90 rounded-xl p-3 text-center">
+                        <div id="stat-length-title" class="text-[11px] uppercase tracking-wider text-slate-400">Länge L (L₀ = 100 m)</div>
+                        <div id="stat-length-val" class="font-mono-tech text-xl sm:text-2xl font-bold text-sky-400 mt-0.5">80,0 m</div>
+                        <div id="stat-height-note" class="text-[11px] text-emerald-400 mt-0.5">Höhe H = 28,0 m (konst.)</div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Synchronized Dual-Perspective Canvases (Stacked for maximum horizontal clarity) -->
+        <section class="grid grid-cols-1 gap-6">
+            
+            <!-- Top Canvas: Proper Frame / Ruhesystem des Raumschiffs (bzw. Ruhesystem Erde in Mode 2) -->
+            <div class="cosmic-card cyan-glow-border rounded-2xl overflow-hidden flex flex-col">
+                <div class="p-4 sm:px-5 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2 bg-slate-900/50">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_10px_#22d3ee]"></span>
+                        <div>
+                            <h2 id="top-canvas-title" class="text-sm sm:text-base font-bold text-white">1. Ruhesystem des Raumschiffs (Eigenlänge L₀)</h2>
+                            <p id="top-canvas-subtitle" class="text-xs text-slate-400">Für die Crew an Bord ruht das Raumschiff (<span class="font-mono-tech text-cyan-300">v = 0</span>) — es besitzt seine volle Eigenlänge <span class="font-mono-tech text-cyan-300">L₀ = 100,0 m</span></p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-slate-950/80 border border-cyan-500/30 rounded-xl px-3 py-1.5">
+                        <div class="text-right">
+                            <div id="top-metric-label-1" class="text-[10px] uppercase tracking-wider text-slate-400">Eigenlänge (L₀)</div>
+                            <div id="top-metric-val-1" class="font-mono-tech text-base sm:text-lg font-bold text-cyan-400">100,0 m</div>
+                        </div>
+                        <div class="h-6 w-px bg-slate-800"></div>
+                        <div class="text-right">
+                            <div id="top-metric-label-2" class="text-[10px] uppercase tracking-wider text-slate-400">Schiffshöhe (H₀)</div>
+                            <div id="top-metric-val-2" class="font-mono-tech text-sm font-semibold text-slate-200">28,0 m</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Canvas Container -->
+                <div class="relative h-60 sm:h-64 w-full bg-slate-950/75">
+                    <canvas id="canvas-top"></canvas>
+                    <!-- Overlay Legend -->
+                    <div class="absolute bottom-2.5 left-3 right-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none text-xs">
+                        <span id="top-overlay-left" class="px-2.5 py-1 rounded-lg bg-slate-900/85 border border-slate-800 text-slate-300 backdrop-blur-sm">
+                            Bezugssystem: <strong class="font-mono-tech text-cyan-400">Ruhendes Schiff (L₀ = 100,0 m)</strong>
+                        </span>
+                        <span id="top-overlay-right" class="px-2.5 py-1 rounded-lg bg-slate-900/85 border border-slate-800 text-slate-300 backdrop-blur-sm">
+                            Senkrechte Ausdehnung: <strong class="font-mono-tech text-emerald-400">Unverändert (100%)</strong>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Canvas: Lab Frame / Bewegtes System (Kontrahierte Länge L = L0 / gamma) -->
+            <div class="cosmic-card amber-glow-border rounded-2xl overflow-hidden flex flex-col">
+                <div class="p-4 sm:px-5 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2 bg-slate-900/50">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-3 h-3 rounded-full bg-amber-400 shadow-[0_0_10px_#fbbf24]"></span>
+                        <div>
+                            <h2 id="bottom-canvas-title" class="text-sm sm:text-base font-bold text-white">2. Beobachtersystem Weltraumbahnhof (Bewegtes Raumschiff)</h2>
+                            <p id="bottom-canvas-subtitle" class="text-xs text-slate-400">Das Raumschiff rast mit <span id="sub-v-text" class="font-mono-tech text-amber-300">v = 0,60 c</span> vorbei — in Bewegungsrichtung auf <span id="sub-l-text" class="font-mono-tech text-amber-300">L = 80,0 m</span> gestaucht</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-slate-950/80 border border-amber-500/30 rounded-xl px-3 py-1.5">
+                        <div class="text-right">
+                            <div id="bottom-metric-label-1" class="text-[10px] uppercase tracking-wider text-slate-400">Kontrahierte Länge (L)</div>
+                            <div id="bottom-metric-val-1" class="font-mono-tech text-base sm:text-lg font-bold text-amber-400">80,0 m</div>
+                        </div>
+                        <div class="h-6 w-px bg-slate-800"></div>
+                        <div class="text-right">
+                            <div id="bottom-metric-label-2" class="text-[10px] uppercase tracking-wider text-slate-400">Verhältnis (L / L₀)</div>
+                            <div id="bottom-metric-val-2" class="font-mono-tech text-sm font-semibold text-slate-200">80,0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Canvas Container -->
+                <div class="relative h-60 sm:h-64 w-full bg-slate-950/75">
+                    <canvas id="canvas-bottom"></canvas>
+                    <!-- Overlay Legend -->
+                    <div class="absolute bottom-2.5 left-3 right-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none text-xs">
+                        <span id="bottom-overlay-left" class="px-2.5 py-1 rounded-lg bg-slate-900/85 border border-slate-800 text-slate-300 backdrop-blur-sm">
+                            Gleichzeitige Messung von Bug & Heck: <strong class="font-mono-tech text-amber-400">L = L₀ / γ = 80,0 m</strong>
+                        </span>
+                        <span id="bottom-overlay-right" class="px-2.5 py-1 rounded-lg bg-slate-900/85 border border-slate-800 text-slate-300 backdrop-blur-sm">
+                            Lorentz-Faktor: <strong class="font-mono-tech text-white">γ = 1,250</strong>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Direct Silhouette Comparison & Live Lorentz Contraction Curve + 3 Cards -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left 5 Cols: Silhouette Overlay & Function Curve L(v)/L0 -->
+            <div class="lg:col-span-5 cosmic-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
+                <div>
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-sky-400">Direktvergleich & Funktionskurve</span>
+                        <span class="text-xs font-mono-tech text-slate-400">L(v) = L₀ · √(1 - v²/c²)</span>
+                    </div>
+                    <h3 class="text-base font-bold text-white mb-1">Silhouetten-Vergleich & Lorentz-Kurve</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Nur die Ausdehnung parallel zur Geschwindigkeit <span class="font-mono-tech text-amber-300">v</span> wird um den Faktor <span class="font-mono-tech text-sky-300">1/γ</span> gestaucht. Die Höhe <span class="font-mono-tech text-emerald-400">H</span> senkrecht dazu bleibt bei jeder Geschwindigkeit exakt gleich.
+                    </p>
+                </div>
+
+                <!-- Dynamic SVG Silhouette Comparison + Curve -->
+                <div class="bg-slate-950/75 border border-slate-800/80 rounded-xl p-3.5 space-y-4">
+                    
+                    <!-- Visual Ship Silhouette Comparison Bar -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-[11px] font-mono-tech">
+                            <span class="text-cyan-400">Eigenlänge L₀ = 100,0 m (Ruhesystem)</span>
+                            <span id="sil-label-l" class="text-amber-400 font-bold">L = 80,0 m (80,0%)</span>
+                        </div>
+                        <svg id="silhouette-svg" viewBox="0 0 360 88" class="w-full h-22 bg-slate-900/60 rounded-lg border border-slate-800/70">
+                            <!-- Reference Grid -->
+                            <line x1="30" y1="10" x2="30" y2="78" stroke="#334155" stroke-width="1" stroke-dasharray="2 2"/>
+                            <line x1="330" y1="10" x2="330" y2="78" stroke="#22d3ee" stroke-width="1" stroke-dasharray="2 2" opacity="0.5"/>
+                            
+                            <!-- Ghost Proper Ship Silhouette (Full 300px width) -->
+                            <g opacity="0.32">
+                                <polygon points="30,26 275,26 330,44 275,62 30,62 42,44" fill="none" stroke="#22d3ee" stroke-width="2" stroke-dasharray="4 3"/>
+                            </g>
+
+                            <!-- Contracted Ship Group (Scaled horizontally around x=30, y-height remains identical!) -->
+                            <g id="sil-contracted-group" transform="translate(30, 0) scale(0.8, 1)">
+                                <polygon points="0,26 245,26 300,44 245,62 0,62 12,44" fill="rgba(245, 158, 11, 0.22)" stroke="#fbbf24" stroke-width="2.2"/>
+                                <!-- Cockpit window -->
+                                <ellipse cx="235" cy="44" rx="18" ry="6" fill="rgba(56, 189, 248, 0.45)" stroke="#38bdf8" stroke-width="1.2"/>
+                            </g>
+
+                            <!-- Constant Height Marker H -->
+                            <line x1="16" y1="26" x2="16" y2="62" stroke="#34d399" stroke-width="2"/>
+                            <line x1="12" y1="26" x2="20" y2="26" stroke="#34d399" stroke-width="2"/>
+                            <line x1="12" y1="62" x2="20" y2="62" stroke="#34d399" stroke-width="2"/>
+                            <text x="8" y="47" fill="#34d399" font-size="9" font-family="JetBrains Mono" text-anchor="middle" font-weight="700">H</text>
+
+                            <!-- Dynamic Right Boundary Marker of Contracted Ship -->
+                            <line id="sil-end-line" x1="270" y1="12" x2="270" y2="76" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="3 2"/>
+                        </svg>
+                    </div>
+
+                    <!-- Quarter-Circle Lorentz Contraction Graph L/L0 = sqrt(1 - (v/c)^2) -->
+                    <div class="flex flex-col sm:flex-row items-center gap-4 pt-1 border-t border-slate-800/80">
+                        <svg id="curve-svg" viewBox="0 0 185 125" class="w-44 h-28 shrink-0">
+                            <!-- Axes -->
+                            <line x1="30" y1="100" x2="170" y2="100" stroke="#475569" stroke-width="1.5"/>
+                            <line x1="30" y1="100" x2="30" y2="15" stroke="#475569" stroke-width="1.5"/>
+                            
+                            <!-- Quarter Circle Path: x from 30 to 160 (width 130), y from 15 to 100 (height 85) -->
+                            <path id="lorentz-curve-path" d="" fill="rgba(56, 189, 248, 0.08)" stroke="#38bdf8" stroke-width="2.2"/>
+
+                            <!-- Guide lines for current operating point -->
+                            <line id="curve-guide-x" x1="30" y1="32" x2="108" y2="32" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="3 2"/>
+                            <line id="curve-guide-y" x1="108" y1="100" x2="108" y2="32" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="3 2"/>
+
+                            <!-- Live Point on Curve -->
+                            <circle id="curve-dot" cx="108" cy="32" r="4.5" fill="#fbbf24" stroke="#0f172a" stroke-width="1.5"/>
+
+                            <!-- Axis Labels -->
+                            <text x="25" y="20" fill="#94a3b8" font-size="8.5" font-family="JetBrains Mono" text-anchor="end">1,0</text>
+                            <text x="25" y="58" fill="#94a3b8" font-size="8.5" font-family="JetBrains Mono" text-anchor="end">0,5</text>
+                            <text x="25" y="103" fill="#94a3b8" font-size="8.5" font-family="JetBrains Mono" text-anchor="end">0</text>
+                            <text x="30" y="114" fill="#94a3b8" font-size="8.5" font-family="JetBrains Mono" text-anchor="middle">0</text>
+                            <text x="95" y="114" fill="#94a3b8" font-size="8.5" font-family="JetBrains Mono" text-anchor="middle">0,5c</text>
+                            <text x="160" y="114" fill="#94a3b8" font-size="8.5" font-family="JetBrains Mono" text-anchor="middle">1,0c</text>
+                            <text x="98" y="12" fill="#38bdf8" font-size="9" font-family="JetBrains Mono" text-anchor="middle" font-weight="600">L / L₀ = √(1 - v²/c²)</text>
+                        </svg>
+
+                        <div class="space-y-1.5 text-xs w-full">
+                            <div class="flex justify-between items-center py-1 border-b border-slate-800/80">
+                                <span class="text-slate-400">Geschwindigkeit (v):</span>
+                                <span id="curve-stat-v" class="font-mono-tech font-semibold text-amber-400">0,600 c</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1 border-b border-slate-800/80">
+                                <span class="text-slate-400">Faktor 1/γ = √(1-v²/c²):</span>
+                                <span id="curve-stat-invgamma" class="font-mono-tech font-semibold text-sky-400">0,800</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-0.5">
+                                <span class="text-slate-400">Reisedistanz (D = D₀/γ):</span>
+                                <span id="curve-stat-dist" class="font-mono-tech font-bold text-purple-400">3,39 Lj</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Right 7 Cols: 3 Explanatory Physics Cards -->
+            <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                
+                <!-- Card 1 -->
+                <div class="cosmic-card rounded-2xl p-5 flex flex-col justify-between border-t-2 border-t-cyan-400">
+                    <div>
+                        <div class="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-mono-tech font-bold text-sm mb-3">
+                            01
+                        </div>
+                        <h3 class="text-sm font-bold text-white mb-2">1. Nur in Bewegungsrichtung</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Die Lorentz-Kontraktion wirkt <strong>ausschließlich parallel zur Geschwindigkeit <span class="font-mono-tech text-cyan-300">v</span></strong>. Senkrecht zur Bewegungsrichtung gibt es keinerlei Stauchung: Breite und Höhe <span class="font-mono-tech text-emerald-300">H</span> des Raumschiffs bleiben für alle Beobachter identisch.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/80 text-[11px] font-mono-tech text-emerald-400">
+                        L_x = L₀ / γ • Höhe H_y = H₀ (100%)
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="cosmic-card rounded-2xl p-5 flex flex-col justify-between border-t-2 border-t-amber-400">
+                    <div>
+                        <div class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 font-mono-tech font-bold text-sm mb-3">
+                            02
+                        </div>
+                        <h3 class="text-sm font-bold text-white mb-2">2. Symmetrie der Bezugssysteme</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Warum erreichen Astronauten ferne Sterne (oder atmosphärische Myonen die Erde) in kurzer Eigenzeit? Im Ruhesystem des Reisenden ist <strong>die Flugstrecke selbst auf <span class="font-mono-tech text-amber-300">D = D₀ / γ</span> verkürzt</strong>!
+                        </p>
+                    </div>
+                    <div id="card-journey-info" class="mt-4 pt-3 border-t border-slate-800/80 text-[11px] font-mono-tech text-amber-400">
+                        Proxima Centauri: 3,39 Lj statt 4,24 Lj
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="cosmic-card rounded-2xl p-5 flex flex-col justify-between border-t-2 border-t-purple-400">
+                    <div>
+                        <div class="w-8 h-8 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 font-mono-tech font-bold text-sm mb-3">
+                            03
+                        </div>
+                        <h3 class="text-sm font-bold text-white mb-2">3. Gleichzeitigkeit & Messung</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Um die Länge eines bewegten Körpers zu bestimmen, müssen die Positionen von Bug und Heck <strong>im selben Moment (<span class="font-mono-tech text-purple-300">Δt = 0</span>)</strong> abgelesen werden. Da Gleichzeitigkeit relativ ist, ergibt sich <span class="font-mono-tech text-white">L = L₀ / γ</span>.
+                        </p>
+                    </div>
+                    <div id="card-measure-info" class="mt-4 pt-3 border-t border-slate-800/80 text-[11px] font-mono-tech text-purple-300">
+                        L = 80,0 m (−20,0% Stauchung)
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950/60 py-4 px-4 text-center text-xs text-slate-500">
+        Interaktive Physik-Simulation • Wechsle oben zwischen „Modus 1: Raumschiff-Abmessung“ und „Modus 2: Interstellare Reise (Erde → Proxima Centauri)“.
+    </footer>
+
+    <script>
+        (function () {
+            // Helper for German decimal formatting
+            function fmtDE(num, decimals) {
+                return Number(num).toFixed(decimals).replace('.', ',');
+            }
+
+            // --- Simulation State ---
+            const state = {
+                mode: 'ship',            // 'ship' (Mode 1: L0 = 100 m) or 'journey' (Mode 2: D0 = 4.24 Lj)
+                isRunning: true,
+                simSpeedMultiplier: 1.0, // 1.0x or 0.35x slow-mo
+                showGrid: true,
+                beta: 0.60,              // v / c (0.00 to 0.995)
+                gamma: 1.25,             // 1 / sqrt(1 - beta^2)
+                invGamma: 0.80,          // sqrt(1 - beta^2)
+                properLengthM: 100.0,    // Mode 1: 100.0 meters
+                properHeightM: 28.0,     // Mode 1: 28.0 meters height
+                properDistanceLY: 4.24,  // Mode 2: 4.24 light years (Earth -> Proxima Centauri)
+                animProgress: 0.25,      // Normalized traversal progress [0..1]
+                laserFlashAlpha: 0,      // Simultaneous laser measurement flash [0..1]
+                photonPulseProgress: 0,  // Internal laser pulse inside top ship
+                lastFrameTimestamp: null,
+                stars: []
+            };
+
+            // Generate starfield for canvases
+            for (let i = 0; i < 55; i++) {
+                state.stars.push({
+                    x: Math.random(),
+                    y: Math.random(),
+                    r: Math.random() * 1.4 + 0.4,
+                    alpha: Math.random() * 0.65 + 0.2
+                });
+            }
+
+            // --- DOM Elements ---
+            const tabModeShip = document.getElementById('tab-mode-ship');
+            const tabModeJourney = document.getElementById('tab-mode-journey');
+            const btnToggleGrid = document.getElementById('btn-toggle-grid');
+            const gridDot = document.getElementById('grid-dot');
+            const btnLaserPulse = document.getElementById('btn-laser-pulse');
+
+            const slider = document.getElementById('velocity-slider');
+            const velocityReadout = document.getElementById('velocity-readout');
+            const headerRatio = document.getElementById('header-ratio');
+            const statGamma = document.getElementById('stat-gamma');
+            const statStauchung = document.getElementById('stat-stauchung');
+            const statLengthTitle = document.getElementById('stat-length-title');
+            const statLengthVal = document.getElementById('stat-length-val');
+            const statHeightNote = document.getElementById('stat-height-note');
+
+            const topCanvasTitle = document.getElementById('top-canvas-title');
+            const topCanvasSubtitle = document.getElementById('top-canvas-subtitle');
+            const topMetricLabel1 = document.getElementById('top-metric-label-1');
+            const topMetricVal1 = document.getElementById('top-metric-val-1');
+            const topMetricLabel2 = document.getElementById('top-metric-label-2');
+            const topMetricVal2 = document.getElementById('top-metric-val-2');
+            const topOverlayLeft = document.getElementById('top-overlay-left');
+            const topOverlayRight = document.getElementById('top-overlay-right');
+
+            const bottomCanvasTitle = document.getElementById('bottom-canvas-title');
+            const bottomCanvasSubtitle = document.getElementById('bottom-canvas-subtitle');
+            const bottomMetricLabel1 = document.getElementById('bottom-metric-label-1');
+            const bottomMetricVal1 = document.getElementById('bottom-metric-val-1');
+            const bottomMetricLabel2 = document.getElementById('bottom-metric-label-2');
+            const bottomMetricVal2 = document.getElementById('bottom-metric-val-2');
+            const bottomOverlayLeft = document.getElementById('bottom-overlay-left');
+            const bottomOverlayRight = document.getElementById('bottom-overlay-right');
+
+            const btnPlayPause = document.getElementById('btn-play-pause');
+            const iconPause = document.getElementById('icon-pause');
+            const iconPlay = document.getElementById('icon-play');
+            const textPlayPause = document.getElementById('text-play-pause');
+            const btnReset = document.getElementById('btn-reset');
+            const btnSlowmo = document.getElementById('btn-slowmo');
+            const slowmoDot = document.getElementById('slowmo-dot');
+            const slowmoLabel = document.getElementById('slowmo-label');
+            const presetBtns = document.querySelectorAll('.preset-btn');
+
+            // Silhouette & Curve Elements
+            const silLabelL = document.getElementById('sil-label-l');
+            const silContractedGroup = document.getElementById('sil-contracted-group');
+            const silEndLine = document.getElementById('sil-end-line');
+            const lorentzCurvePath = document.getElementById('lorentz-curve-path');
+            const curveGuideX = document.getElementById('curve-guide-x');
+            const curveGuideY = document.getElementById('curve-guide-y');
+            const curveDot = document.getElementById('curve-dot');
+            const curveStatV = document.getElementById('curve-stat-v');
+            const curveStatInvgamma = document.getElementById('curve-stat-invgamma');
+            const curveStatDist = document.getElementById('curve-stat-dist');
+            const cardJourneyInfo = document.getElementById('card-journey-info');
+            const cardMeasureInfo = document.getElementById('card-measure-info');
+
+            const canvasTop = document.getElementById('canvas-top');
+            const ctxTop = canvasTop.getContext('2d');
+            const canvasBottom = document.getElementById('canvas-bottom');
+            const ctxBottom = canvasBottom.getContext('2d');
+
+            // Build Quarter-Circle Lorentz Contraction Path in SVG once
+            function initLorentzCurveSVG() {
+                const startX = 30;
+                const baseY = 100;
+                const widthPx = 130;
+                const heightPx = 85;
+                let d = `M ${startX} ${baseY - heightPx}`;
+                const steps = 60;
+                for (let i = 1; i <= steps; i++) {
+                    const b = i / steps;
+                    const invG = Math.sqrt(Math.max(0, 1 - b * b));
+                    const x = startX + b * widthPx;
+                    const y = baseY - invG * heightPx;
+                    d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
+                }
+                d += ` L ${startX + widthPx} ${baseY} L ${startX} ${baseY} Z`;
+                lorentzCurvePath.setAttribute('d', d);
+            }
+
+            // Update Physics & UI Readouts
+            function updatePhysicsAndUI(betaPercent) {
+                const clampedPercent = Math.max(0, Math.min(99.5, Number(betaPercent)));
+                state.beta = clampedPercent / 100;
+                state.invGamma = Math.sqrt(Math.max(0.0001, 1 - state.beta * state.beta));
+                state.gamma = 1 / state.invGamma;
+
+                const contractedM = state.properLengthM * state.invGamma;
+                const contractedLY = state.properDistanceLY * state.invGamma;
+                const ratioPct = state.invGamma * 100;
+                const stauchungPct = (1 - state.invGamma) * 100;
+
+                // Header & Slider Readouts
+                const pctDecimals = clampedPercent % 1 === 0 ? 0 : 1;
+                velocityReadout.textContent = `${fmtDE(state.beta, 3)} c (${fmtDE(clampedPercent, pctDecimals)}% Lichtgeschw.)`;
+                headerRatio.textContent = `${fmtDE(ratioPct, 1)}%`;
+
+                // Telemetry Cards
+                statGamma.textContent = fmtDE(state.gamma, 3);
+                statStauchung.textContent = state.beta === 0
+                    ? 'Keine Stauchung (0%)'
+                    : `Stauchung: −${fmtDE(stauchungPct, 1)}%`;
+
+                if (state.mode === 'ship') {
+                    statLengthTitle.textContent = 'Länge L (L₀ = 100 m)';
+                    statLengthVal.textContent = `${fmtDE(contractedM, 1)} m`;
+                    statHeightNote.textContent = `Höhe H = ${fmtDE(state.properHeightM, 1)} m (konst.)`;
+
+                    // Top Canvas Labels (Proper Frame of Spaceship)
+                    topCanvasTitle.textContent = '1. Ruhesystem des Raumschiffs (Eigenlänge L₀)';
+                    topCanvasSubtitle.innerHTML = `Für die Crew an Bord ruht das Raumschiff (<span class="font-mono-tech text-cyan-300">v = 0</span>) — es besitzt seine volle Eigenlänge <span class="font-mono-tech text-cyan-300">L₀ = 100,0 m</span>`;
+                    topMetricLabel1.textContent = 'Eigenlänge (L₀)';
+                    topMetricVal1.textContent = '100,0 m';
+                    topMetricLabel2.textContent = 'Schiffshöhe (H₀)';
+                    topMetricVal2.textContent = '28,0 m';
+                    topOverlayLeft.innerHTML = `Bezugssystem Schiff: <strong class="font-mono-tech text-cyan-400">Volle Eigenlänge L₀ = 100,0 m</strong>`;
+                    topOverlayRight.innerHTML = `Senkrechte Höhe H: <strong class="font-mono-tech text-emerald-400">28,0 m (unverändert)</strong>`;
+
+                    // Bottom Canvas Labels (Observer Frame)
+                    bottomCanvasTitle.textContent = '2. Beobachtersystem Weltraumbahnhof (Bewegtes Raumschiff)';
+                    bottomCanvasSubtitle.innerHTML = `Das Raumschiff fliegt mit <span class="font-mono-tech text-amber-300">v = ${fmtDE(state.beta, 2)} c</span> vorbei — in Bewegungsrichtung auf <span class="font-mono-tech text-amber-300">L = ${fmtDE(contractedM, 1)} m</span> verkürzt`;
+                    bottomMetricLabel1.textContent = 'Kontrahierte Länge (L)';
+                    bottomMetricVal1.textContent = `${fmtDE(contractedM, 1)} m`;
+                    bottomMetricLabel2.textContent = 'Verhältnis (L / L₀)';
+                    bottomMetricVal2.textContent = `${fmtDE(ratioPct, 1)}%`;
+                    bottomOverlayLeft.innerHTML = `Gleichzeitige Messung (Bug & Heck): <strong class="font-mono-tech text-amber-400">L = L₀ / γ = ${fmtDE(contractedM, 1)} m</strong>`;
+                    bottomOverlayRight.innerHTML = `Lorentz-Faktor: <strong class="font-mono-tech text-white">γ = ${fmtDE(state.gamma, 3)}</strong>`;
+                } else {
+                    // Mode 2: Interstellar Journey (Earth -> Proxima Centauri, D0 = 4.24 LY)
+                    const earthTravelTime = state.beta > 0.005 ? (state.properDistanceLY / state.beta) : Infinity;
+                    const shipProperTime = state.beta > 0.005 ? (contractedLY / state.beta) : Infinity;
+
+                    statLengthTitle.textContent = 'Strecke D (D₀ = 4,24 Lj)';
+                    statLengthVal.textContent = `${fmtDE(contractedLY, 2)} Lj`;
+                    statHeightNote.textContent = shipProperTime < Infinity
+                        ? `Bordzeit Δt₀ = ${fmtDE(shipProperTime, 2)} J`
+                        : 'Schiff ruht (v = 0)';
+
+                    // Top Canvas Labels (Earth Rest Frame)
+                    topCanvasTitle.textContent = '1. Ruhesystem Erde → Proxima Centauri (Ruhedistanz D₀ = 4,24 Lj)';
+                    topCanvasSubtitle.innerHTML = `Für Beobachter auf der Erde ruhen Start & Ziel (<span class="font-mono-tech text-cyan-300">D₀ = 4,24 Lj</span>) — das bewegte Raumschiff ist um <span class="font-mono-tech text-amber-300">1/γ</span> gestaucht`;
+                    topMetricLabel1.textContent = 'Stern-Distanz (D₀)';
+                    topMetricVal1.textContent = '4,24 Lj';
+                    topMetricLabel2.textContent = 'Reisezeit Erde (Δt)';
+                    topMetricVal2.textContent = earthTravelTime < Infinity ? `${fmtDE(earthTravelTime, 2)} J` : '∞';
+                    topOverlayLeft.innerHTML = `Ruhesystem Erde: <strong class="font-mono-tech text-cyan-400">Volle Distanz D₀ = 4,24 Lichtjahre</strong>`;
+                    topOverlayRight.innerHTML = `Raumschiff-Länge aus Erdsicht: <strong class="font-mono-tech text-amber-400">L = ${fmtDE(contractedM, 1)} m</strong>`;
+
+                    // Bottom Canvas Labels (Spaceship Rest Frame)
+                    bottomCanvasTitle.textContent = '2. Ruhesystem des Astronauten (Kontrahierte Reisestrecke D = D₀ / γ)';
+                    bottomCanvasSubtitle.innerHTML = `Für den Astronauten ruht das Schiff in voller Länge (<span class="font-mono-tech text-cyan-300">100 m</span>), aber das Sternsystem rast vorbei und ist auf <span class="font-mono-tech text-amber-300">D = ${fmtDE(contractedLY, 2)} Lj</span> gestaucht!`;
+                    bottomMetricLabel1.textContent = 'Kontrahierte Distanz (D)';
+                    bottomMetricVal1.textContent = `${fmtDE(contractedLY, 2)} Lj`;
+                    bottomMetricLabel2.textContent = 'Eigenzeit Schiff (Δt₀)';
+                    bottomMetricVal2.textContent = shipProperTime < Infinity ? `${fmtDE(shipProperTime, 2)} J` : '∞';
+                    bottomOverlayLeft.innerHTML = `Strecke kontrahiert: <strong class="font-mono-tech text-amber-400">D = D₀ / γ = ${fmtDE(contractedLY, 2)} Lichtjahre</strong>`;
+                    bottomOverlayRight.innerHTML = `Schiff im eigenen Ruhesystem: <strong class="font-mono-tech text-cyan-400">L₀ = 100,0 m</strong>`;
+                }
+
+                // Update Preset Button Highlights
+                presetBtns.forEach(btn => {
+                    const v = Number(btn.getAttribute('data-v'));
+                    if (Math.abs(v - clampedPercent) < 0.08) {
+                        btn.className = 'preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 transition cursor-pointer';
+                    } else {
+                        btn.className = 'preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition cursor-pointer';
+                    }
+                });
+
+                // Update Silhouette Comparison SVG
+                silLabelL.textContent = `L = ${fmtDE(contractedM, 1)} m (${fmtDE(ratioPct, 1)}%)`;
+                silContractedGroup.setAttribute('transform', `translate(30, 0) scale(${state.invGamma.toFixed(4)}, 1)`);
+                const endX = 30 + 300 * state.invGamma;
+                silEndLine.setAttribute('x1', endX.toFixed(1));
+                silEndLine.setAttribute('x2', endX.toFixed(1));
+
+                // Update Quarter-Circle Lorentz Curve Point
+                const dotX = 30 + state.beta * 130;
+                const dotY = 100 - state.invGamma * 85;
+                curveDot.setAttribute('cx', dotX.toFixed(1));
+                curveDot.setAttribute('cy', dotY.toFixed(1));
+                curveGuideX.setAttribute('x1', 30);
+                curveGuideX.setAttribute('y1', dotY.toFixed(1));
+                curveGuideX.setAttribute('x2', dotX.toFixed(1));
+                curveGuideX.setAttribute('y2', dotY.toFixed(1));
+                curveGuideY.setAttribute('x1', dotX.toFixed(1));
+                curveGuideY.setAttribute('y1', 100);
+                curveGuideY.setAttribute('x2', dotX.toFixed(1));
+                curveGuideY.setAttribute('y2', dotY.toFixed(1));
+
+                curveStatV.textContent = `${fmtDE(state.beta, 3)} c`;
+                curveStatInvgamma.textContent = fmtDE(state.invGamma, 3);
+                curveStatDist.textContent = `${fmtDE(contractedLY, 2)} Lj`;
+
+                cardJourneyInfo.textContent = `Proxima Centauri: ${fmtDE(contractedLY, 2)} Lj statt 4,24 Lj`;
+                cardMeasureInfo.textContent = `L = ${fmtDE(contractedM, 1)} m (−${fmtDE(stauchungPct, 1)}% Stauchung)`;
+            }
+
+            // Resize Canvases for High-DPI Displays
+            function resizeCanvases() {
+                const dpr = window.devicePixelRatio || 1;
+                [canvasTop, canvasBottom].forEach(canvas => {
+                    const rect = canvas.parentElement.getBoundingClientRect();
+                    canvas.width = rect.width * dpr;
+                    canvas.height = rect.height * dpr;
+                    const ctx = canvas.getContext('2d');
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                });
+            }
+
+            // Draw Background Starfield & Optional Measurement Grid
+            function drawBackgroundAndGrid(ctx, width, height, gridOffsetX, gridSpacingPx, accentColor) {
+                ctx.clearRect(0, 0, width, height);
+
+                // Stars
+                state.stars.forEach(s => {
+                    ctx.fillStyle = `rgba(148, 163, 184, ${s.alpha * 0.45})`;
+                    ctx.beginPath();
+                    ctx.arc(s.x * width, s.y * height, s.r, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                if (!state.showGrid) return;
+
+                // Vertical & Horizontal Coordinate Grid
+                ctx.strokeStyle = 'rgba(51, 65, 85, 0.28)';
+                ctx.lineWidth = 1;
+                const step = Math.max(18, gridSpacingPx);
+                const startX = ((gridOffsetX % step) + step) % step;
+
+                for (let x = startX; x < width; x += step) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, height);
+                    ctx.stroke();
+                }
+                for (let y = 28; y < height; y += 32) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(width, y);
+                    ctx.stroke();
+                }
+
+                // Top Ruler Ticks
+                ctx.strokeStyle = accentColor;
+                ctx.globalAlpha = 0.35;
+                for (let x = startX; x < width; x += step) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, 8);
+                    ctx.stroke();
+                }
+                ctx.globalAlpha = 1.0;
+            }
+
+            // Draw Spaceship with given center (cx, cy), pixel length (lenPx), pixel height (heightPx), and theme color
+            function drawSpaceship(ctx, cx, cy, lenPx, heightPx, strokeColor, fillColor, showEngineFlame, betaVal) {
+                const halfL = lenPx / 2;
+                const halfH = heightPx / 2;
+                const tailX = cx - halfL;
+                const noseX = cx + halfL;
+
+                ctx.save();
+
+                // Engine flame if moving
+                if (showEngineFlame && betaVal > 0.01) {
+                    const flameLen = (18 + betaVal * 48) * (0.85 + 0.15 * Math.sin(performance.now() * 0.02));
+                    const grad = ctx.createLinearGradient(tailX - flameLen, cy, tailX, cy);
+                    grad.addColorStop(0, 'rgba(56, 189, 248, 0)');
+                    grad.addColorStop(0.5, 'rgba(56, 189, 248, 0.55)');
+                    grad.addColorStop(1, 'rgba(251, 191, 36, 0.95)');
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.moveTo(tailX, cy - halfH * 0.48);
+                    ctx.lineTo(tailX - flameLen, cy);
+                    ctx.lineTo(tailX, cy + halfH * 0.48);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                // Outer Hull Glow
+                ctx.shadowColor = strokeColor;
+                ctx.shadowBlur = 12;
+
+                // Main Fuselage Polygon (scales horizontally with lenPx, vertically fixed with heightPx)
+                const shoulderX = cx + halfL * 0.55;
+                const rearIndentX = tailX + lenPx * 0.06;
+
+                ctx.fillStyle = fillColor;
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = 2.2;
+
+                ctx.beginPath();
+                ctx.moveTo(tailX, cy - halfH);
+                ctx.lineTo(shoulderX, cy - halfH);
+                ctx.lineTo(noseX, cy);
+                ctx.lineTo(shoulderX, cy + halfH);
+                ctx.lineTo(tailX, cy + halfH);
+                ctx.lineTo(rearIndentX, cy);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Internal Structural Ribs (show horizontal compression visually)
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'rgba(226, 232, 240, 0.22)';
+                ctx.lineWidth = 1.2;
+                [-0.25, 0.0, 0.25].forEach(frac => {
+                    const rx = cx + frac * lenPx;
+                    ctx.beginPath();
+                    ctx.moveTo(rx, cy - halfH + 3);
+                    ctx.lineTo(rx, cy + halfH - 3);
+                    ctx.stroke();
+                });
+
+                // Cockpit Canopy
+                const canopyX = cx + halfL * 0.35;
+                const canopyRx = Math.max(2.5, lenPx * 0.11);
+                const canopyRy = halfH * 0.34;
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.45)';
+                ctx.strokeStyle = '#7dd3fc';
+                ctx.lineWidth = 1.3;
+                ctx.beginPath();
+                ctx.ellipse(canopyX, cy, canopyRx, canopyRy, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            // Draw Dimension Caliper Bracket below or above an object
+            function drawDimensionBracket(ctx, x1, x2, y, labelText, color, subText) {
+                ctx.save();
+                ctx.strokeStyle = color;
+                ctx.fillStyle = color;
+                ctx.lineWidth = 1.8;
+
+                // Vertical end ticks
+                ctx.beginPath();
+                ctx.moveTo(x1, y - 6);
+                ctx.lineTo(x1, y + 6);
+                ctx.moveTo(x2, y - 6);
+                ctx.lineTo(x2, y + 6);
+                ctx.moveTo(x1, y);
+                ctx.lineTo(x2, y);
+                ctx.stroke();
+
+                // Label pill
+                const midX = (x1 + x2) / 2;
+                ctx.font = '700 11px "JetBrains Mono", monospace';
+                const textWidth = ctx.measureText(labelText).width;
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+                ctx.beginPath();
+                ctx.roundRect(midX - textWidth / 2 - 6, y - 9, textWidth + 12, 18, 4);
+                ctx.fill();
+
+                ctx.fillStyle = color;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(labelText, midX, y);
+
+                if (subText) {
+                    ctx.font = '500 10px "Inter", sans-serif';
+                    ctx.fillStyle = 'rgba(148, 163, 184, 0.85)';
+                    ctx.fillText(subText, midX, y + 16);
+                }
+                ctx.restore();
+            }
+
+            // Draw Mode 1: Spaceship Abmessung & Laser-Längenmessung
+            function drawModeShip() {
+                const wTop = canvasTop.parentElement.clientWidth;
+                const hTop = canvasTop.parentElement.clientHeight;
+                const wBot = canvasBottom.parentElement.clientWidth;
+                const hBot = canvasBottom.parentElement.clientHeight;
+
+                const baseShipPx = Math.min(280, Math.max(170, wTop * 0.34));
+                const shipHeightPx = 56;
+                const contractedShipPx = baseShipPx * state.invGamma;
+
+                // --- 1. TOP CANVAS: Proper Frame of Spaceship (Ship at rest, L0 = 100 m) ---
+                // Background grid scrolls left at -v to show that the outside world moves past the resting ship
+                const scrollOffsetTop = -state.animProgress * wTop * 1.5;
+                drawBackgroundAndGrid(ctxTop, wTop, hTop, scrollOffsetTop, baseShipPx / 5, '#22d3ee');
+
+                const topCenterX = wTop * 0.5;
+                const topCenterY = hTop * 0.43;
+
+                // Draw Proper Spaceship (Full Length L0)
+                drawSpaceship(
+                    ctxTop,
+                    topCenterX,
+                    topCenterY,
+                    baseShipPx,
+                    shipHeightPx,
+                    '#22d3ee',
+                    'rgba(34, 211, 238, 0.16)',
+                    true,
+                    state.beta
+                );
+
+                // Internal Laser Interferometer Pulse bouncing from tail to nose inside the resting ship
+                const tailXTop = topCenterX - baseShipPx / 2;
+                const noseXTop = topCenterX + baseShipPx / 2;
+                const pulseWave = state.photonPulseProgress <= 0.5
+                    ? state.photonPulseProgress * 2
+                    : (1 - state.photonPulseProgress) * 2;
+                const laserX = tailXTop + 10 + pulseWave * (baseShipPx - 20);
+
+                ctxTop.save();
+                ctxTop.strokeStyle = 'rgba(34, 211, 238, 0.45)';
+                ctxTop.setLineDash([4, 4]);
+                ctxTop.beginPath();
+                ctxTop.moveTo(tailXTop + 8, topCenterY);
+                ctxTop.lineTo(noseXTop - 8, topCenterY);
+                ctxTop.stroke();
+
+                ctxTop.fillStyle = '#ecfeff';
+                ctxTop.shadowColor = '#22d3ee';
+                ctxTop.shadowBlur = 10;
+                ctxTop.beginPath();
+                ctxTop.arc(laserX, topCenterY, 4, 0, Math.PI * 2);
+                ctxTop.fill();
+                ctxTop.restore();
+
+                // Vertical Height Indicator H0 = 28.0 m
+                if (state.showGrid) {
+                    const hLineX = tailXTop - 22;
+                    ctxTop.save();
+                    ctxTop.strokeStyle = '#34d399';
+                    ctxTop.fillStyle = '#34d399';
+                    ctxTop.lineWidth = 1.6;
+                    ctxTop.beginPath();
+                    ctxTop.moveTo(hLineX, topCenterY - shipHeightPx / 2);
+                    ctxTop.lineTo(hLineX, topCenterY + shipHeightPx / 2);
+                    ctxTop.moveTo(hLineX - 4, topCenterY - shipHeightPx / 2);
+                    ctxTop.lineTo(hLineX + 4, topCenterY - shipHeightPx / 2);
+                    ctxTop.moveTo(hLineX - 4, topCenterY + shipHeightPx / 2);
+                    ctxTop.lineTo(hLineX + 4, topCenterY + shipHeightPx / 2);
+                    ctxTop.stroke();
+                    ctxTop.font = '600 10px "JetBrains Mono", monospace';
+                    ctxTop.textAlign = 'right';
+                    ctxTop.fillText('H₀ = 28,0 m', hLineX - 8, topCenterY + 3);
+                    ctxTop.restore();
+                }
+
+                // Proper Length Caliper Bracket
+                drawDimensionBracket(
+                    ctxTop,
+                    tailXTop,
+                    noseXTop,
+                    topCenterY + shipHeightPx / 2 + 22,
+                    'Eigenlänge L₀ = 100,0 m (100%)',
+                    '#22d3ee'
+                );
+
+                // --- 2. BOTTOM CANVAS: Lab / Station Frame (Ship moving right at v, contracted L = L0 / gamma) ---
+                drawBackgroundAndGrid(ctxBottom, wBot, hBot, 0, baseShipPx / 5, '#fbbf24');
+
+                const botCenterY = hBot * 0.43;
+                const marginX = baseShipPx * 0.65;
+                const trackSpan = Math.max(140, wBot - marginX * 2);
+                const shipCenterX = state.beta === 0
+                    ? wBot * 0.5
+                    : marginX + state.animProgress * trackSpan;
+
+                // Ghost Outline of Uncontracted Ship (L0) for instant visual comparison
+                ctxBottom.save();
+                ctxBottom.strokeStyle = 'rgba(34, 211, 238, 0.28)';
+                ctxBottom.setLineDash([5, 4]);
+                ctxBottom.lineWidth = 1.5;
+                const ghostHalfL = baseShipPx / 2;
+                const ghostHalfH = shipHeightPx / 2;
+                ctxBottom.beginPath();
+                ctxBottom.moveTo(shipCenterX - ghostHalfL, botCenterY - ghostHalfH);
+                ctxBottom.lineTo(shipCenterX + ghostHalfL * 0.55, botCenterY - ghostHalfH);
+                ctxBottom.lineTo(shipCenterX + ghostHalfL, botCenterY);
+                ctxBottom.lineTo(shipCenterX + ghostHalfL * 0.55, botCenterY + ghostHalfH);
+                ctxBottom.lineTo(shipCenterX - ghostHalfL, botCenterY + ghostHalfH);
+                ctxBottom.closePath();
+                ctxBottom.stroke();
+                ctxBottom.restore();
+
+                // Draw Contracted Moving Spaceship (Length = contractedShipPx, Height = shipHeightPx)
+                drawSpaceship(
+                    ctxBottom,
+                    shipCenterX,
+                    botCenterY,
+                    contractedShipPx,
+                    shipHeightPx,
+                    '#fbbf24',
+                    'rgba(245, 158, 11, 0.20)',
+                    true,
+                    state.beta
+                );
+
+                // Vertical Height Indicator H = 28.0 m (identical to H0)
+                const cTailX = shipCenterX - contractedShipPx / 2;
+                const cNoseX = shipCenterX + contractedShipPx / 2;
+
+                if (state.showGrid) {
+                    const hLineX = shipCenterX - ghostHalfL - 18;
+                    ctxBottom.save();
+                    ctxBottom.strokeStyle = '#34d399';
+                    ctxBottom.fillStyle = '#34d399';
+                    ctxBottom.lineWidth = 1.6;
+                    ctxBottom.beginPath();
+                    ctxBottom.moveTo(hLineX, botCenterY - shipHeightPx / 2);
+                    ctxBottom.lineTo(hLineX, botCenterY + shipHeightPx / 2);
+                    ctxBottom.moveTo(hLineX - 4, botCenterY - shipHeightPx / 2);
+                    ctxBottom.lineTo(hLineX + 4, botCenterY - shipHeightPx / 2);
+                    ctxBottom.moveTo(hLineX - 4, botCenterY + shipHeightPx / 2);
+                    ctxBottom.lineTo(hLineX + 4, botCenterY + shipHeightPx / 2);
+                    ctxBottom.stroke();
+                    ctxBottom.font = '600 10px "JetBrains Mono", monospace';
+                    ctxBottom.textAlign = 'right';
+                    ctxBottom.fillText('H = 28,0 m', hLineX - 8, botCenterY + 3);
+                    ctxBottom.restore();
+                }
+
+                // Simultaneous Laser Measurement Flash Gates (Bug & Heck)
+                if (state.laserFlashAlpha > 0.01) {
+                    ctxBottom.save();
+                    ctxBottom.strokeStyle = `rgba(251, 191, 36, ${state.laserFlashAlpha})`;
+                    ctxBottom.fillStyle = `rgba(251, 191, 36, ${state.laserFlashAlpha})`;
+                    ctxBottom.lineWidth = 2.5;
+                    ctxBottom.shadowColor = '#fbbf24';
+                    ctxBottom.shadowBlur = 12;
+
+                    [cTailX, cNoseX].forEach(lx => {
+                        ctxBottom.beginPath();
+                        ctxBottom.moveTo(lx, 12);
+                        ctxBottom.lineTo(lx, botCenterY + shipHeightPx / 2 + 18);
+                        ctxBottom.stroke();
+
+                        ctxBottom.beginPath();
+                        ctxBottom.arc(lx, 14, 4.5, 0, Math.PI * 2);
+                        ctxBottom.fill();
+                    });
+
+                    ctxBottom.font = '700 11px "JetBrains Mono", monospace';
+                    ctxBottom.textAlign = 'center';
+                    ctxBottom.fillText('⚡ Gleichzeitige Laser-Abtastung (Δt = 0)', shipCenterX, 24);
+                    ctxBottom.restore();
+                }
+
+                // Contracted Length Caliper Bracket
+                const contractedM = state.properLengthM * state.invGamma;
+                drawDimensionBracket(
+                    ctxBottom,
+                    cTailX,
+                    cNoseX,
+                    botCenterY + shipHeightPx / 2 + 22,
+                    `L = ${fmtDE(contractedM, 1)} m (${fmtDE(state.invGamma * 100, 1)}%)`,
+                    '#fbbf24'
+                );
+            }
+
+            // Draw Planet Helper for Mode 2
+            function drawPlanet(ctx, x, y, radius, primaryColor, glowColor, name, subLabel) {
+                ctx.save();
+                ctx.shadowColor = glowColor;
+                ctx.shadowBlur = 18;
+                const grad = ctx.createRadialGradient(x - radius * 0.3, y - radius * 0.3, radius * 0.2, x, y, radius);
+                grad.addColorStop(0, '#ffffff');
+                grad.addColorStop(0.35, primaryColor);
+                grad.addColorStop(1, '#0f172a');
+
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.shadowBlur = 0;
+                ctx.font = '700 11px "Inter", sans-serif';
+                ctx.fillStyle = '#f8fafc';
+                ctx.textAlign = 'center';
+                ctx.fillText(name, x, y - radius - 14);
+
+                if (subLabel) {
+                    ctx.font = '500 10px "JetBrains Mono", monospace';
+                    ctx.fillStyle = primaryColor;
+                    ctx.fillText(subLabel, x, y - radius - 3);
+                }
+                ctx.restore();
+            }
+
+            // Draw Mode 2: Interstellar Journey (Earth -> Proxima Centauri, D0 = 4.24 LY)
+            function drawModeJourney() {
+                const wTop = canvasTop.parentElement.clientWidth;
+                const hTop = canvasTop.parentElement.clientHeight;
+                const wBot = canvasBottom.parentElement.clientWidth;
+                const hBot = canvasBottom.parentElement.clientHeight;
+
+                const maxTrackPx = Math.min(wTop - 160, 620);
+                const contractedTrackPx = Math.max(55, maxTrackPx * state.invGamma);
+                const contractedLY = state.properDistanceLY * state.invGamma;
+
+                // --- 1. TOP CANVAS: Earth Rest Frame (Distance D0 = 4.24 LY is fixed, Ship is contracted) ---
+                drawBackgroundAndGrid(ctxTop, wTop, hTop, 0, maxTrackPx / 8, '#22d3ee');
+
+                const topCenterY = hTop * 0.44;
+                const earthXTop = (wTop - maxTrackPx) / 2;
+                const proxXTop = earthXTop + maxTrackPx;
+
+                // Connective Route Line
+                ctxTop.save();
+                ctxTop.strokeStyle = 'rgba(34, 211, 238, 0.3)';
+                ctxTop.setLineDash([6, 6]);
+                ctxTop.lineWidth = 2;
+                ctxTop.beginPath();
+                ctxTop.moveTo(earthXTop, topCenterY);
+                ctxTop.lineTo(proxXTop, topCenterY);
+                ctxTop.stroke();
+                ctxTop.restore();
+
+                // Draw Earth & Proxima Centauri at fixed proper distance D0
+                drawPlanet(ctxTop, earthXTop, topCenterY, 18, '#38bdf8', '#0284c7', 'Erde (Start)', 'x = 0 Lj');
+                drawPlanet(ctxTop, proxXTop, topCenterY, 16, '#f43f5e', '#e11d48', 'Proxima Centauri', 'D₀ = 4,24 Lj');
+
+                // Moving Contracted Spaceship traveling from Earth to Proxima
+                const shipXTop = earthXTop + 34 + state.animProgress * (maxTrackPx - 68);
+                const baseShipJourneyPx = 68;
+                const contractedShipJourneyPx = Math.max(10, baseShipJourneyPx * state.invGamma);
+
+                drawSpaceship(
+                    ctxTop,
+                    shipXTop,
+                    topCenterY,
+                    contractedShipJourneyPx,
+                    26,
+                    '#fbbf24',
+                    'rgba(245, 158, 11, 0.25)',
+                    true,
+                    state.beta
+                );
+
+                // Distance Bracket for Proper Distance D0 = 4,24 Lj
+                drawDimensionBracket(
+                    ctxTop,
+                    earthXTop,
+                    proxXTop,
+                    topCenterY + 38,
+                    'Ruhedistanz D₀ = 4,24 Lichtjahre (100%)',
+                    '#22d3ee'
+                );
+
+                // --- 2. BOTTOM CANVAS: Astronaut Rest Frame (Ship at rest in center, Star distance contracted to D = D0 / gamma!) ---
+                const scrollGridBot = -state.animProgress * contractedTrackPx;
+                drawBackgroundAndGrid(ctxBottom, wBot, hBot, scrollGridBot, Math.max(16, (maxTrackPx / 8) * state.invGamma), '#fbbf24');
+
+                const botCenterX = wBot * 0.5;
+                const botCenterY = hBot * 0.44;
+
+                // In the astronaut's frame, the ship is stationary at botCenterX,
+                // while Earth and Proxima Centauri (separated by contractedTrackPx) move LEFT past the ship!
+                const earthXBot = botCenterX - state.animProgress * contractedTrackPx;
+                const proxXBot = earthXBot + contractedTrackPx;
+
+                // Ghost Reference of Uncontracted Distance D0
+                ctxBottom.save();
+                ctxBottom.strokeStyle = 'rgba(34, 211, 238, 0.2)';
+                ctxBottom.setLineDash([4, 4]);
+                ctxBottom.lineWidth = 1.5;
+                ctxBottom.beginPath();
+                ctxBottom.moveTo(earthXBot, botCenterY - 26);
+                ctxBottom.lineTo(earthXBot + maxTrackPx, botCenterY - 26);
+                ctxBottom.stroke();
+                ctxBottom.restore();
+
+                // Contracted Route Line between Earth and Proxima
+                ctxBottom.save();
+                ctxBottom.strokeStyle = 'rgba(251, 191, 36, 0.45)';
+                ctxBottom.setLineDash([5, 5]);
+                ctxBottom.lineWidth = 2;
+                ctxBottom.beginPath();
+                ctxBottom.moveTo(earthXBot, botCenterY);
+                ctxBottom.lineTo(proxXBot, botCenterY);
+                ctxBottom.stroke();
+                ctxBottom.restore();
+
+                // Draw Moving Earth & Proxima Centauri (separated by contracted distance D)
+                drawPlanet(ctxBottom, earthXBot, botCenterY, 17, '#38bdf8', '#0284c7', 'Erde', 'bewegt ←');
+                drawPlanet(ctxBottom, proxXBot, botCenterY, 16, '#f43f5e', '#e11d48', 'Proxima Centauri', `D = ${fmtDE(contractedLY, 2)} Lj`);
+
+                // Draw Resting Spaceship in Full Proper Length (baseShipJourneyPx) at Center
+                drawSpaceship(
+                    ctxBottom,
+                    botCenterX,
+                    botCenterY,
+                    baseShipJourneyPx,
+                    26,
+                    '#22d3ee',
+                    'rgba(34, 211, 238, 0.22)',
+                    true,
+                    state.beta
+                );
+
+                // Bracket showing Contracted Distance D = D0 / gamma
+                drawDimensionBracket(
+                    ctxBottom,
+                    earthXBot,
+                    proxXBot,
+                    botCenterY + 38,
+                    `Kontrahierte Strecke D = ${fmtDE(contractedLY, 2)} Lj (${fmtDE(state.invGamma * 100, 1)}%)`,
+                    '#fbbf24'
+                );
+            }
+
+            // Main Animation Loop
+            function animate(timestamp) {
+                if (!state.lastFrameTimestamp) {
+                    state.lastFrameTimestamp = timestamp;
+                }
+                const dtSeconds = Math.min(0.1, (timestamp - state.lastFrameTimestamp) / 1000);
+                state.lastFrameTimestamp = timestamp;
+
+                if (state.isRunning) {
+                    // Traverse speed scales smoothly with beta
+                    const effectiveV = state.beta === 0 ? 0 : (0.12 + state.beta * 0.28);
+                    state.animProgress = (state.animProgress + dtSeconds * effectiveV * state.simSpeedMultiplier) % 1;
+                    state.photonPulseProgress = (state.photonPulseProgress + dtSeconds * 0.85 * state.simSpeedMultiplier) % 1;
+                }
+
+                if (state.laserFlashAlpha > 0) {
+                    state.laserFlashAlpha = Math.max(0, state.laserFlashAlpha - dtSeconds * 1.4);
+                }
+
+                if (state.mode === 'ship') {
+                    drawModeShip();
+                } else {
+                    drawModeJourney();
+                }
+
+                requestAnimationFrame(animate);
+            }
+
+            // --- Event Listeners ---
+            slider.addEventListener('input', (e) => {
+                updatePhysicsAndUI(e.target.value);
+            });
+
+            presetBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const v = btn.getAttribute('data-v');
+                    slider.value = v;
+                    updatePhysicsAndUI(v);
+                });
+            });
+
+            tabModeShip.addEventListener('click', () => {
+                state.mode = 'ship';
+                tabModeShip.className = 'flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20 cursor-pointer';
+                tabModeJourney.className = 'flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 text-slate-300 hover:text-white cursor-pointer';
+                updatePhysicsAndUI(slider.value);
+            });
+
+            tabModeJourney.addEventListener('click', () => {
+                state.mode = 'journey';
+                tabModeJourney.className = 'flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20 cursor-pointer';
+                tabModeShip.className = 'flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 text-slate-300 hover:text-white cursor-pointer';
+                updatePhysicsAndUI(slider.value);
+            });
+
+            btnToggleGrid.addEventListener('click', () => {
+                state.showGrid = !state.showGrid;
+                if (state.showGrid) {
+                    btnToggleGrid.className = 'inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium bg-sky-500/15 text-sky-300 border border-sky-500/30 hover:bg-sky-500/25 transition cursor-pointer';
+                    gridDot.className = 'w-2 h-2 rounded-full bg-sky-400';
+                    btnToggleGrid.querySelector('span:last-child').textContent = 'Messgitter & Maßstab: AN';
+                } else {
+                    btnToggleGrid.className = 'inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium bg-slate-900 text-slate-400 border border-slate-800 hover:bg-slate-800 transition cursor-pointer';
+                    gridDot.className = 'w-2 h-2 rounded-full bg-slate-500';
+                    btnToggleGrid.querySelector('span:last-child').textContent = 'Messgitter & Maßstab: AUS';
+                }
+            });
+
+            btnLaserPulse.addEventListener('click', () => {
+                if (state.mode !== 'ship') {
+                    tabModeShip.click();
+                }
+                state.laserFlashAlpha = 1.0;
+            });
+
+            btnPlayPause.addEventListener('click', () => {
+                state.isRunning = !state.isRunning;
+                if (state.isRunning) {
+                    iconPause.classList.remove('hidden');
+                    iconPlay.classList.add('hidden');
+                    textPlayPause.textContent = 'Pause';
+                } else {
+                    iconPause.classList.add('hidden');
+                    iconPlay.classList.remove('hidden');
+                    textPlayPause.textContent = 'Start';
+                }
+            });
+
+            btnReset.addEventListener('click', () => {
+                state.animProgress = 0.15;
+                state.photonPulseProgress = 0;
+                state.laserFlashAlpha = 1.0;
+            });
+
+            btnSlowmo.addEventListener('click', () => {
+                if (state.simSpeedMultiplier === 1.0) {
+                    state.simSpeedMultiplier = 0.35;
+                    slowmoLabel.textContent = 'Zeitlupe (0,35x)';
+                    slowmoDot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+                } else {
+                    state.simSpeedMultiplier = 1.0;
+                    slowmoLabel.textContent = 'Normal (1,0x)';
+                    slowmoDot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                resizeCanvases();
+            });
+
+            window.onload = function () {
+                initLorentzCurveSVG();
+                resizeCanvases();
+                updatePhysicsAndUI(slider.value);
+                requestAnimationFrame(animate);
+            };
+        })();
+    </script>
+</body>
+</html>

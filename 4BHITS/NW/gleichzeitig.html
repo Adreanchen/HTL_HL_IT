@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relativität der Gleichzeitigkeit: Das Scheunenparadoxon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+        body {
+            font-family: var(--font-sans);
+            background-color: #060913;
+            color: #f1f5f9;
+            overflow-x: hidden;
+        }
+        .font-mono-tech {
+            font-family: var(--font-mono);
+        }
+        /* Custom Range Sliders */
+        input[type=range].cosmic-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, #1e293b 0%, #334155 100%);
+            border-radius: 999px;
+            outline: none;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        input[type=range].cosmic-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.8), inset 0 0 4px #ffffff;
+            border: 2px solid #e0f2fe;
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        input[type=range].cosmic-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            background: #7dd3fc;
+        }
+        input[type=range].cosmic-slider::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.8), inset 0 0 4px #ffffff;
+            border: 2px solid #e0f2fe;
+            transition: transform 0.15s ease;
+        }
+
+        /* Time Scrubber Slider (Amber / Violet Accent) */
+        input[type=range].time-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(90deg, #1e293b 0%, #312e81 50%, #1e293b 100%);
+            border-radius: 999px;
+            outline: none;
+            border: 1px solid rgba(168, 85, 247, 0.35);
+        }
+        input[type=range].time-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #fbbf24;
+            cursor: pointer;
+            box-shadow: 0 0 16px rgba(251, 191, 36, 0.9), inset 0 0 4px #ffffff;
+            border: 2px solid #fef3c7;
+            transition: transform 0.15s ease;
+        }
+        input[type=range].time-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        /* Subtle glowing cards */
+        .cosmic-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+        }
+        .cyan-glow-border {
+            border-color: rgba(34, 211, 238, 0.3);
+            box-shadow: 0 0 25px -5px rgba(34, 211, 238, 0.12);
+        }
+        .amber-glow-border {
+            border-color: rgba(245, 158, 11, 0.3);
+            box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.12);
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800/80 bg-slate-950/60 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500/20 via-purple-500/20 to-amber-500/20 border border-sky-400/30 flex items-center justify-center shadow-inner">
+                    <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white">Relativität der Gleichzeitigkeit: Das Scheunenparadoxon</h1>
+                        <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                            Leiter-Paradoxon
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400">Warum eine 16 Meter lange Leiter in eine 10 Meter kurze Scheune passt – und warum trotzdem beide Beobachter recht haben</p>
+                </div>
+            </div>
+
+            <!-- Live Quick Formula Pill -->
+            <div class="flex items-center gap-3 self-stretch sm:self-auto justify-between sm:justify-end bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2">
+                <div class="text-xs text-slate-400">
+                    <span class="hidden sm:inline">Desynchronisation </span><span class="font-mono-tech text-slate-300">Δt' = -γ · v · L_S0 / c²</span>
+                </div>
+                <div class="h-4 w-px bg-slate-800"></div>
+                <div class="flex items-baseline gap-1.5">
+                    <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Status:</span>
+                    <span id="header-fit-badge" class="font-mono-tech text-xs sm:text-sm font-bold px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                        Passt! (8,0 m ≤ 10,0 m)
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Interactive Control Deck -->
+        <section class="cosmic-card rounded-2xl p-4 sm:p-6 space-y-5">
+            
+            <!-- Top Row: Playback, Velocity Slider & Telemetry -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                
+                <!-- Play / Pause / Reset & Slow-Mo -->
+                <div class="lg:col-span-4 flex flex-wrap sm:flex-nowrap items-center gap-2.5">
+                    <button id="btn-play-pause" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm bg-sky-500 hover:bg-sky-400 text-slate-950 shadow-lg shadow-sky-500/20 transition cursor-pointer">
+                        <svg id="icon-pause" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                        </svg>
+                        <svg id="icon-play" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        <span id="text-play-pause">Pause</span>
+                    </button>
+
+                    <button id="btn-reset" class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-medium text-sm bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer" title="Auf t = 0 zurücksetzen">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span>Zurücksetzen</span>
+                    </button>
+
+                    <button id="btn-slowmo" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl font-medium text-xs bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition cursor-pointer" title="Zeitlupe umschalten">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400" id="slowmo-dot"></span>
+                        <span id="slowmo-label">Normal (1,0x)</span>
+                    </button>
+                </div>
+
+                <!-- Velocity Slider (10% to 96% c) -->
+                <div class="lg:col-span-5 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label for="velocity-slider" class="text-xs sm:text-sm font-medium text-slate-300 flex items-center gap-2">
+                            <span>Geschwindigkeit der Leiter (<span class="font-mono-tech text-amber-400">v / c</span>)</span>
+                        </label>
+                        <span id="velocity-readout" class="font-mono-tech text-sm sm:text-base font-bold px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                            0,866 c (γ = 2,00)
+                        </span>
+                    </div>
+
+                    <input id="velocity-slider" type="range" min="10" max="96" step="0.1" value="86.6" class="cosmic-slider">
+
+                    <!-- Preset Velocity Buttons -->
+                    <div class="flex items-center justify-between gap-1 pt-1">
+                        <span class="text-[11px] text-slate-500">Szenarien:</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button data-v="50" class="preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition cursor-pointer" title="Leiter ist 13,9 m lang (zu lang für 10 m Scheune)">Zu langsam: 50% c</button>
+                            <button data-v="78.1" class="preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition cursor-pointer" title="Grenzfall γ = 1,60: Leiter ist exakt 10,0 m lang">Exakt passend: 78,1% c</button>
+                            <button data-v="86.6" class="preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 transition cursor-pointer" title="Klassiker γ = 2,00: Leiter ist 8,0 m kurz">Klassiker: 86,6% c (γ=2)</button>
+                            <button data-v="95" class="preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition cursor-pointer" title="γ = 3,20: Leiter ist nur noch 5,0 m kurz">Extrem: 95% c</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Telemetry Readouts -->
+                <div class="lg:col-span-3 grid grid-cols-2 gap-2.5">
+                    <div class="bg-slate-900/90 border border-slate-800/90 rounded-xl p-3 text-center">
+                        <div class="text-[10px] uppercase tracking-wider text-slate-400">Scheunensystem (Bauer)</div>
+                        <div id="stat-ladder-len" class="font-mono-tech text-lg sm:text-xl font-bold text-cyan-400 mt-0.5">L_L = 8,0 m</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">in <span class="text-white font-mono-tech">10,0 m</span> Scheune</div>
+                    </div>
+                    <div class="bg-slate-900/90 border border-slate-800/90 rounded-xl p-3 text-center">
+                        <div class="text-[10px] uppercase tracking-wider text-slate-400">Leitersystem (Pilot)</div>
+                        <div id="stat-barn-len" class="font-mono-tech text-lg sm:text-xl font-bold text-amber-400 mt-0.5">L_S' = 5,0 m</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">für <span class="text-white font-mono-tech">16,0 m</span> Leiter!</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Row: Interactive Time Scrubber & Event Jump Buttons -->
+            <div class="pt-4 border-t border-slate-800/80 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+                <div class="flex-1 space-y-1.5">
+                    <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <span class="font-semibold text-slate-300 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                            <span>Manueller Zeit-Scrubber (Beide Systeme gekoppelt über Ereignis-Fortschritt)</span>
+                        </span>
+                        <div class="flex items-center gap-3 font-mono-tech text-xs">
+                            <span class="text-cyan-400">Scheunenzeit t = <strong id="scrub-t-barn">0,0 ns</strong></span>
+                            <span class="text-slate-600">|</span>
+                            <span class="text-amber-400">Leiterzeit t' = <strong id="scrub-t-ladder">0,0 ns</strong></span>
+                        </div>
+                    </div>
+                    <input id="time-scrubber" type="range" min="-100" max="100" step="0.5" value="0" class="time-slider">
+                </div>
+
+                <!-- Direct Event Jump Buttons -->
+                <div class="flex flex-wrap items-center gap-2 shrink-0">
+                    <span class="text-[11px] text-slate-400 font-medium mr-1">Springe zu:</span>
+                    <button id="btn-jump-b" class="px-3 py-2 rounded-xl text-xs font-mono-tech font-semibold bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 transition cursor-pointer" title="Moment im Leitersystem, in dem die Leiterspitze das rechte Ausgangstor B erreicht">
+                        ⚡ 1. Tor B schließt (Leitersicht)
+                    </button>
+                    <button id="btn-jump-center" class="px-3 py-2 rounded-xl text-xs font-mono-tech font-semibold bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 transition cursor-pointer" title="Moment t = 0 im Scheunensystem: Beide Tore A & B schließen exakt gleichzeitig!">
+                        🎯 t = 0: Beide Tore zu (Scheunensicht)
+                    </button>
+                    <button id="btn-jump-a" class="px-3 py-2 rounded-xl text-xs font-mono-tech font-semibold bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 transition cursor-pointer" title="Moment im Leitersystem, in dem das Leiterende das linke Eingangstor A passiert">
+                        ⚡ 2. Tor A schließt (Leitersicht)
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Synchronized Dual-Perspective Canvases -->
+        <section class="grid grid-cols-1 gap-6">
+            
+            <!-- View 1 (Top): Rest Frame of the Barn (Farmer at Rest) -->
+            <div class="cosmic-card cyan-glow-border rounded-2xl overflow-hidden flex flex-col">
+                <div class="p-4 sm:px-5 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2 bg-slate-900/50">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_10px_#22d3ee]"></span>
+                        <div>
+                            <h2 class="text-sm sm:text-base font-bold text-white">1. Ruhesystem der Scheune (Beobachter Bauer am Boden)</h2>
+                            <p class="text-xs text-slate-400">
+                                Die Scheune ruht (<span class="font-mono-tech text-cyan-300">L_Scheune = 10,0 m</span>). Die bewegte Leiter ist auf <span id="top-sub-ladder" class="font-mono-tech text-cyan-300">8,0 m</span> gestaucht — bei <span class="font-mono-tech text-white">t = 0</span> blitzen Tor A und Tor B <strong>GLEICHZEITIG</strong>!
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-slate-950/80 border border-cyan-500/30 rounded-xl px-3 py-1.5">
+                        <div class="text-right">
+                            <div class="text-[10px] uppercase tracking-wider text-slate-400">Tor-Uhren A & B</div>
+                            <div class="font-mono-tech text-xs sm:text-sm font-bold text-emerald-400">Synchron (t_A = t_B)</div>
+                        </div>
+                        <div class="h-6 w-px bg-slate-800"></div>
+                        <div class="text-right">
+                            <div class="text-[10px] uppercase tracking-wider text-slate-400">Leiterlänge (L_L)</div>
+                            <div id="top-metric-ladder" class="font-mono-tech text-base sm:text-lg font-bold text-cyan-400">8,00 m</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Canvas Container -->
+                <div class="relative h-64 sm:h-72 w-full bg-slate-950/75">
+                    <canvas id="canvas-barn"></canvas>
+                    <!-- Overlay Legend -->
+                    <div class="absolute bottom-2.5 left-3 right-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none text-xs">
+                        <span class="px-2.5 py-1 rounded-lg bg-slate-900/85 border border-slate-800 text-slate-300 backdrop-blur-sm">
+                            Scheune ruht: <strong class="font-mono-tech text-cyan-400">10,0 m</strong> • Leiter bewegt (→): <strong id="top-overlay-ladder" class="font-mono-tech text-amber-400">8,0 m</strong>
+                        </span>
+                        <span id="top-event-banner" class="px-2.5 py-1 rounded-lg bg-slate-900/85 border border-slate-800 text-slate-300 backdrop-blur-sm">
+                            Tor-Ereignisse A & B finden bei <strong class="font-mono-tech text-cyan-400">t = 0,0 ns gleichzeitig</strong> statt
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 2 (Bottom): Rest Frame of the Ladder (Pilot / Runner on Ladder) -->
+            <div class="cosmic-card amber-glow-border rounded-2xl overflow-hidden flex flex-col">
+                <div class="p-4 sm:px-5 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2 bg-slate-900/50">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-3 h-3 rounded-full bg-amber-400 shadow-[0_0_10px_#fbbf24]"></span>
+                        <div>
+                            <h2 class="text-sm sm:text-base font-bold text-white">2. Ruhesystem der Leiter (Beobachter Pilot auf der Leiter)</h2>
+                            <p class="text-xs text-slate-400">
+                                Die Leiter ruht in voller Eigenlänge (<span class="font-mono-tech text-amber-300">L_Leiter,0 = 16,0 m</span>). Die Scheune rast nach links (←) und ist auf <span id="bot-sub-barn" class="font-mono-tech text-amber-300">5,0 m</span> geschrumpft — <strong>Tor B schließt lange VOR Tor A!</strong>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-slate-950/80 border border-amber-500/30 rounded-xl px-3 py-1.5">
+                        <div class="text-right">
+                            <div class="text-[10px] uppercase tracking-wider text-slate-400">Uhren-Versatz (Δt₀)</div>
+                            <div id="bot-metric-offset" class="font-mono-tech text-xs sm:text-sm font-bold text-rose-400">Tor B +28,9 ns vor A</div>
+                        </div>
+                        <div class="h-6 w-px bg-slate-800"></div>
+                        <div class="text-right">
+                            <div class="text-[10px] uppercase tracking-wider text-slate-400">Scheunenlänge (L_S')</div>
+                            <div id="bot-metric-barn" class="font-mono-tech text-base sm:text-lg font-bold text-amber-400">5,00 m</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Canvas Container -->
+                <div class="relative h-64 sm:h-72 w-full bg-slate-950/75">
+                    <canvas id="canvas-ladder"></canvas>
+                    <!-- Overlay Legend -->
+                    <div class="absolute bottom-2.5 left-3 right-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none text-xs">
+                        <span class="px-2.5 py-1 rounded-lg bg-slate-900/85 border border-slate-800 text-slate-300 backdrop-blur-sm">
+                            Leiter ruht: <strong class="font-mono-tech text-amber-400">16,0 m</strong> • Scheune bewegt (←): <strong id="bot-overlay-barn" class="font-mono-tech text-cyan-400">5,0 m</strong>
+                        </span>
+                        <span id="bot-event-banner" class="px-2.5 py-1 rounded-lg bg-slate-900/85 border border-slate-800 text-slate-300 backdrop-blur-sm">
+                            Zeitabstand der Tor-Blitze im Leitersystem: <strong id="bot-overlay-dt" class="font-mono-tech text-rose-400">Δt' = 57,7 ns</strong>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Minkowski Spacetime Diagram & 3 Explanatory Physics Cards -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left 5 Cols: Interactive Minkowski Spacetime Diagram (ct over x) -->
+            <div class="lg:col-span-5 cosmic-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
+                <div>
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-sky-400">Minkowski-Raumzeit-Diagramm</span>
+                        <span class="text-xs font-mono-tech text-slate-400">ct über x (Scheunensystem)</span>
+                    </div>
+                    <h3 class="text-base font-bold text-white mb-1">Gekippte Gleichzeitigkeitslinien</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Im Scheunensystem liegen die Tor-Ereignisse <span class="font-mono-tech text-purple-300">E_A</span> und <span class="font-mono-tech text-rose-300">E_B</span> auf derselben waagerechten Linie (<span class="font-mono-tech text-cyan-300">t = 0</span>). Die Gleichzeitigkeitslinie der Leiter (<span class="font-mono-tech text-amber-300">t' = konst.</span>) ist jedoch um <span class="font-mono-tech text-amber-300">α = arctan(v/c)</span> gekippt: Sie schneidet <span class="font-mono-tech text-rose-300">E_B</span> zuerst und <span class="font-mono-tech text-purple-300">E_A</span> erst später!
+                    </p>
+                </div>
+
+                <!-- Dynamic Minkowski Canvas / SVG + Desynchronization Readout -->
+                <div class="bg-slate-950/80 border border-slate-800/80 rounded-xl p-3.5 space-y-3">
+                    <div class="relative w-full h-52 bg-slate-900/50 rounded-lg border border-slate-800/70 overflow-hidden">
+                        <canvas id="canvas-minkowski"></canvas>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-lg p-2.5">
+                            <div class="text-[10px] text-slate-400 uppercase">1. Blitz an Ausgangstor B</div>
+                            <div id="mink-time-b" class="font-mono-tech font-bold text-rose-400 mt-0.5">t'_B = -28,9 ns</div>
+                            <div class="text-[10px] text-slate-500">t_B = 0,0 ns (im Scheunensys.)</div>
+                        </div>
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-lg p-2.5">
+                            <div class="text-[10px] text-slate-400 uppercase">2. Blitz an Eingangstor A</div>
+                            <div id="mink-time-a" class="font-mono-tech font-bold text-purple-400 mt-0.5">t'_A = +28,9 ns</div>
+                            <div class="text-[10px] text-slate-500">t_A = 0,0 ns (im Scheunensys.)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right 7 Cols: 3 Explanatory Physics Cards -->
+            <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                
+                <!-- Card 1 -->
+                <div class="cosmic-card rounded-2xl p-5 flex flex-col justify-between border-t-2 border-t-cyan-400">
+                    <div>
+                        <div class="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-mono-tech font-bold text-sm mb-3">
+                            01
+                        </div>
+                        <h3 class="text-sm font-bold text-white mb-2">1. Das scheinbare Paradoxon</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Der Bauer sieht die <span class="font-mono-tech text-white">16 m</span> lange Leiter auf <span id="card-ladder-l" class="font-mono-tech text-cyan-300">8,0 m</span> verkürzt – sie passt komplett in die <span class="font-mono-tech text-white">10 m</span> Scheune. Für den Piloten auf der Leiter ruht diese (<span class="font-mono-tech text-white">16 m</span>), während die Scheune auf <span id="card-barn-l" class="font-mono-tech text-amber-300">5,0 m</span> geschrumpft ist. Wer hat recht?
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/80 text-[11px] font-mono-tech text-cyan-400">
+                        Beide Beobachter haben vollkommen recht!
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="cosmic-card rounded-2xl p-5 flex flex-col justify-between border-t-2 border-t-amber-400">
+                    <div>
+                        <div class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 font-mono-tech font-bold text-sm mb-3">
+                            02
+                        </div>
+                        <h3 class="text-sm font-bold text-white mb-2">2. Gleichzeitigkeit ist relativ</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            „Komplett in der Scheune sein“ heißt: Spitze und Ende sind <strong>gleichzeitig</strong> drinnen. Doch zwei Ereignisse im Abstand <span class="font-mono-tech text-white">Δx</span>, die für den Bauern gleichzeitig sind, haben für den Piloten den Zeitabstand <span class="font-mono-tech text-amber-300">Δt' = -γ·v·Δx/c²</span>.
+                        </p>
+                    </div>
+                    <div id="card-desync-info" class="mt-4 pt-3 border-t border-slate-800/80 text-[11px] font-mono-tech text-amber-400">
+                        Tor B schließt 57,7 ns vor Tor A!
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="cosmic-card rounded-2xl p-5 flex flex-col justify-between border-t-2 border-t-purple-400">
+                    <div>
+                        <div class="w-8 h-8 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 font-mono-tech font-bold text-sm mb-3">
+                            03
+                        </div>
+                        <h3 class="text-sm font-bold text-white mb-2">3. Wenn Tor B zu bleibt?</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            In der Relativitätstheorie gibt es <strong>keine unendlich starren Körper</strong>! Prallt die Leiterspitze gegen das geschlossene Tor B, breitet sich die Stoßwelle maximal mit Lichtgeschwindigkeit <span class="font-mono-tech text-purple-300">c</span> nach hinten aus – das Heck fliegt weiter, bis es auch in der Scheune ist!
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/80 text-[11px] font-mono-tech text-purple-300">
+                        Kein Signal ist schneller als 1,00 c
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950/60 py-4 px-4 text-center text-xs text-slate-500">
+        Interaktive Physik-Simulation • Nutze die Event-Sprungtasten („1. Tor B schließt“, „t = 0: Beide Tore zu“, „2. Tor A schließt“) oder ziehe den Zeit-Scrubber, um das Paradoxon Schritt für Schritt aufzulösen.
+    </footer>
+
+    <script>
+        (function () {
+            // Helper for German decimal formatting
+            function fmtDE(num, decimals) {
+                return Number(num).toFixed(decimals).replace('.', ',');
+            }
+
+            // Physical Constants
+            // Speed of light c = 0.299792458 m/ns (approx 0.30 m/ns so 10m takes ~33.36 ns at c)
+            const C_M_PER_NS = 0.299792458;
+            const BARN_PROPER_M = 10.0;   // L_Scheune,0 = 10.0 m (from x = -5 m to x = +5 m)
+            const LADDER_PROPER_M = 16.0; // L_Leiter,0 = 16.0 m (from x' = -8 m to x' = +8 m)
+
+            // --- Simulation State ---
+            const state = {
+                isRunning: true,
+                simSpeedMultiplier: 1.0,
+                beta: 0.866,                // v / c (default 86.6% c -> gamma = 2.00)
+                gamma: 2.00,
+                invGamma: 0.50,
+                // Normalized timeline parameter `u` in [-100, +100]
+                // u = 0 corresponds to x_center_of_ladder = 0 in Barn Frame (t = 0) AND t' = 0 in Ladder Frame!
+                // Wait: Let's align the spacetime origin (x=0, t=0) <-> (x'=0, t'=0) at the EXACT center of the barn & center of the ladder!
+                // Because Lorentz transformation around the center of the barn (x=0, t=0) and center of the ladder (x'=0, t'=0) is completely symmetric!
+                // Let's verify this beauty:
+                // Barn doors in Barn Frame are at x_A = -5 m and x_B = +5 m.
+                // At t = 0 (Barn Frame), both doors flash simultaneously:
+                //   Event A (Left Entrance Door flashes):  x_A = -5 m, t_A = 0 ns
+                //   Event B (Right Exit Door flashes):     x_B = +5 m, t_B = 0 ns
+                // Now Lorentz-transform Event A and Event B into the Ladder Frame (x', t'):
+                //   t'_B = gamma * (t_B - (v/c^2) * x_B) = -gamma * v * (+5 m) / c^2  < 0  (Door B flashes EARLY at t'_B < 0!)
+                //   t'_A = gamma * (t_A - (v/c^2) * x_A) = -gamma * v * (-5 m) / c^2  > 0  (Door A flashes LATE at t'_A > 0!)
+                // And where are the doors in the Ladder Frame when they flash?
+                //   x'_B = gamma * (x_B - v * t_B) = gamma * (+5 m)
+                //   x'_A = gamma * (x_A - v * t_A) = gamma * (-5 m)
+                // Meanwhile, when does the ladder nose (x' = +8 m) actually pass Door B, and when does the ladder tail (x' = -8 m) pass Door A?
+                // At gamma = 2.0, the doors flash at t = 0 when the 8m ladder is centered in the 10m barn (with 1m spare on each side, so x'_B = +10m and x'_A = -10m).
+                timeParam: -65,             // Ranges from -100 to +100
+                lastFrameTimestamp: null,
+                stars: []
+            };
+
+            // Generate subtle background starfield
+            for (let i = 0; i < 48; i++) {
+                state.stars.push({
+                    x: Math.random(),
+                    y: Math.random(),
+                    r: Math.random() * 1.3 + 0.4,
+                    alpha: Math.random() * 0.55 + 0.2
+                });
+            }
+
+            // --- DOM References ---
+            const velocitySlider = document.getElementById('velocity-slider');
+            const velocityReadout = document.getElementById('velocity-readout');
+            const headerFitBadge = document.getElementById('header-fit-badge');
+            const statLadderLen = document.getElementById('stat-ladder-len');
+            const statBarnLen = document.getElementById('stat-barn-len');
+
+            const timeScrubber = document.getElementById('time-scrubber');
+            const scrubTBarn = document.getElementById('scrub-t-barn');
+            const scrubTLadder = document.getElementById('scrub-t-ladder');
+
+            const btnPlayPause = document.getElementById('btn-play-pause');
+            const iconPause = document.getElementById('icon-pause');
+            const iconPlay = document.getElementById('icon-play');
+            const textPlayPause = document.getElementById('text-play-pause');
+            const btnReset = document.getElementById('btn-reset');
+            const btnSlowmo = document.getElementById('btn-slowmo');
+            const slowmoDot = document.getElementById('slowmo-dot');
+            const slowmoLabel = document.getElementById('slowmo-label');
+            const presetBtns = document.querySelectorAll('.preset-btn');
+
+            const btnJumpB = document.getElementById('btn-jump-b');
+            const btnJumpCenter = document.getElementById('btn-jump-center');
+            const btnJumpA = document.getElementById('btn-jump-a');
+
+            // Labels in Canvases & Cards
+            const topSubLadder = document.getElementById('top-sub-ladder');
+            const topMetricLadder = document.getElementById('top-metric-ladder');
+            const topOverlayLadder = document.getElementById('top-overlay-ladder');
+            const topEventBanner = document.getElementById('top-event-banner');
+
+            const botSubBarn = document.getElementById('bot-sub-barn');
+            const botMetricOffset = document.getElementById('bot-metric-offset');
+            const botMetricBarn = document.getElementById('bot-metric-barn');
+            const botOverlayBarn = document.getElementById('bot-overlay-barn');
+            const botOverlayDt = document.getElementById('bot-overlay-dt');
+
+            const minkTimeB = document.getElementById('mink-time-b');
+            const minkTimeA = document.getElementById('mink-time-a');
+            const cardLadderL = document.getElementById('card-ladder-l');
+            const cardBarnL = document.getElementById('card-barn-l');
+            const cardDesyncInfo = document.getElementById('card-desync-info');
+
+            // Canvases
+            const canvasBarn = document.getElementById('canvas-barn');
+            const ctxBarn = canvasBarn.getContext('2d');
+            const canvasLadder = document.getElementById('canvas-ladder');
+            const ctxLadder = canvasLadder.getContext('2d');
+            const canvasMink = document.getElementById('canvas-minkowski');
+            const ctxMink = canvasMink.getContext('2d');
+
+            // --- Relativistic Calculations ---
+            // We map timeParam in [-100, +100] to physical spatial displacement of the moving object:
+            // At timeParam = 0:
+            //   - In Barn Frame (top): t = 0 ns, Ladder center is at x = 0 (center of Barn).
+            //   - In Ladder Frame (bottom): t' = 0 ns, Barn center is at x' = 0 (center of Ladder).
+            // Maximum spatial range from center: +-16 meters so the whole entry and exit is clearly visible.
+            const MAX_OFFSET_M = 16.0;
+
+            function getCurrentKinematics() {
+                // Position offset (in meters) from center at current timeParam:
+                const offsetM = (state.timeParam / 100) * MAX_OFFSET_M;
+                const v_m_per_ns = state.beta * C_M_PER_NS;
+
+                // In Barn Frame: ladder center is at x_L_center = offsetM
+                // Time in Barn Frame: t = offsetM / v
+                const tBarnNs = offsetM / v_m_per_ns;
+
+                // In Ladder Frame: barn center moves right-to-left, so x'_B_center = -offsetM
+                // Time in Ladder Frame: t' = offsetM / v
+                const tLadderNs = offsetM / v_m_per_ns;
+
+                // Event B (Door B at x_B = +5 m flashes at t_B = 0 ns in Barn Frame)
+                // In Ladder Frame, Door B is at x'_B(t') and flashes when its own proper clock reads 0!
+                // Wait: By Lorentz Transformation of Event E_B (x = +5m, t = 0) and Event E_A (x = -5m, t = 0):
+                //   ct'_B = gamma * (0 - beta * (+5m)) = -gamma * beta * 5m
+                //   ct'_A = gamma * (0 - beta * (-5m)) = +gamma * beta * 5m
+                // In Ladder Frame, since Barn center moves at -v, the position of Barn center at t' is x'_center = -v * t'.
+                // Wait: In Ladder Frame, Door B is at x'_center + L_barn_contracted / 2 = -v * t' + 5m / gamma.
+                // Let's check where Door B is at t'_B = -gamma * beta * 5m / c:
+                //   x'_DoorB(t'_B) = -v * (-gamma * v * 5m / c^2) + 5m / gamma
+                //                  = 5m * (gamma * beta^2 + 1 / gamma) = 5m * gamma * (beta^2 + 1 - beta^2) = +5m * gamma!
+                // Exact mathematical consistency!
+                // So in Ladder Frame, the offsetM at which Door B flashes (t' = t'_B) is:
+                //   offsetM_EventB = v * t'_B = -gamma * beta^2 * 5.0 (meters)
+                //   offsetM_EventA = v * t'_A = +gamma * beta^2 * 5.0 (meters)
+                const offsetEventB_M = -state.gamma * state.beta * state.beta * (BARN_PROPER_M / 2);
+                const offsetEventA_M = +state.gamma * state.beta * state.beta * (BARN_PROPER_M / 2);
+
+                const tPrimeEventB_Ns = offsetEventB_M / v_m_per_ns;
+                const tPrimeEventA_Ns = offsetEventA_M / v_m_per_ns;
+                const deltaTPrime_Ns = tPrimeEventA_Ns - tPrimeEventB_Ns;
+
+                // Proper clock offset seen in Ladder Frame: Δt_proper = v * L_barn0 / c^2
+                const properClockLeadB_Ns = (state.beta * BARN_PROPER_M) / C_M_PER_NS;
+
+                return {
+                    offsetM,
+                    v_m_per_ns,
+                    tBarnNs,
+                    tLadderNs,
+                    offsetEventB_M,
+                    offsetEventA_M,
+                    tPrimeEventB_Ns,
+                    tPrimeEventA_Ns,
+                    deltaTPrime_Ns,
+                    properClockLeadB_Ns,
+                    timeParamEventB: (offsetEventB_M / MAX_OFFSET_M) * 100,
+                    timeParamEventA: (offsetEventA_M / MAX_OFFSET_M) * 100
+                };
+            }
+
+            function updatePhysicsParameters(betaPercent) {
+                const clampedPct = Math.max(10, Math.min(96, Number(betaPercent)));
+                state.beta = clampedPct / 100;
+                state.invGamma = Math.sqrt(Math.max(0.001, 1 - state.beta * state.beta));
+                state.gamma = 1 / state.invGamma;
+
+                const contractedLadderM = LADDER_PROPER_M * state.invGamma;
+                const contractedBarnM = BARN_PROPER_M * state.invGamma;
+                const fitsInBarn = contractedLadderM <= BARN_PROPER_M + 0.05;
+
+                // Header & Slider Readouts
+                const pctDec = clampedPct % 1 === 0 ? 0 : 1;
+                velocityReadout.textContent = `${fmtDE(state.beta, 3)} c (${fmtDE(clampedPct, pctDec)}% c • γ = ${fmtDE(state.gamma, 2)})`;
+
+                if (fitsInBarn) {
+                    headerFitBadge.className = 'font-mono-tech text-xs sm:text-sm font-bold px-2.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
+                    headerFitBadge.textContent = `Passt rein! (${fmtDE(contractedLadderM, 1)} m ≤ 10,0 m)`;
+                } else {
+                    headerFitBadge.className = 'font-mono-tech text-xs sm:text-sm font-bold px-2.5 py-0.5 rounded bg-rose-500/15 text-rose-400 border border-rose-500/30';
+                    headerFitBadge.textContent = `Zu lang! (${fmtDE(contractedLadderM, 1)} m > 10,0 m)`;
+                }
+
+                // Telemetry Cards
+                statLadderLen.textContent = `L_L = ${fmtDE(contractedLadderM, 1)} m`;
+                statBarnLen.textContent = `L_S' = ${fmtDE(contractedBarnM, 1)} m`;
+
+                // Canvas Headers & Overlays
+                topSubLadder.textContent = `${fmtDE(contractedLadderM, 1)} m`;
+                topMetricLadder.textContent = `${fmtDE(contractedLadderM, 2)} m`;
+                topOverlayLadder.textContent = `${fmtDE(contractedLadderM, 1)} m`;
+
+                botSubBarn.textContent = `${fmtDE(contractedBarnM, 1)} m`;
+                botMetricBarn.textContent = `${fmtDE(contractedBarnM, 2)} m`;
+                botOverlayBarn.textContent = `${fmtDE(contractedBarnM, 1)} m`;
+
+                const kin = getCurrentKinematics();
+                botMetricOffset.textContent = `Tor B +${fmtDE(kin.properClockLeadB_Ns, 1)} ns vor A`;
+                botOverlayDt.textContent = `Δt' = ${fmtDE(kin.deltaTPrime_Ns, 1)} ns`;
+
+                minkTimeB.textContent = `t'_B = ${fmtDE(kin.tPrimeEventB_Ns, 1)} ns`;
+                minkTimeA.textContent = `t'_A = +${fmtDE(kin.tPrimeEventA_Ns, 1)} ns`;
+
+                cardLadderL.textContent = `${fmtDE(contractedLadderM, 1)} m`;
+                cardBarnL.textContent = `${fmtDE(contractedBarnM, 1)} m`;
+                cardDesyncInfo.textContent = `Tor B schließt ${fmtDE(kin.deltaTPrime_Ns, 1)} ns vor Tor A!`;
+
+                // Highlight active preset button
+                presetBtns.forEach(btn => {
+                    const v = Number(btn.getAttribute('data-v'));
+                    if (Math.abs(v - clampedPct) < 0.15) {
+                        btn.className = 'preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 transition cursor-pointer';
+                    } else {
+                        btn.className = 'preset-btn text-[11px] font-mono-tech px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition cursor-pointer';
+                    }
+                });
+            }
+
+            // Resize Canvases for High-DPI Displays
+            function resizeCanvases() {
+                const dpr = window.devicePixelRatio || 1;
+                [canvasBarn, canvasLadder, canvasMink].forEach(canvas => {
+                    const rect = canvas.parentElement.getBoundingClientRect();
+                    canvas.width = rect.width * dpr;
+                    canvas.height = rect.height * dpr;
+                    const ctx = canvas.getContext('2d');
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                });
+            }
+
+            // Helper: Draw Background Starfield & Meter Coordinate Grid
+            function drawSpaceGrid(ctx, width, height, centerX, pxPerMeter) {
+                ctx.clearRect(0, 0, width, height);
+
+                state.stars.forEach(s => {
+                    ctx.fillStyle = `rgba(148, 163, 184, ${s.alpha * 0.4})`;
+                    ctx.beginPath();
+                    ctx.arc(s.x * width, s.y * height, s.r, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                // Vertical Meter Grid Lines every 2 meters
+                ctx.strokeStyle = 'rgba(51, 65, 85, 0.28)';
+                ctx.lineWidth = 1;
+                const stepPx = pxPerMeter * 2;
+                for (let m = -20; m <= 20; m += 2) {
+                    const x = centerX + m * pxPerMeter;
+                    if (x >= 0 && x <= width) {
+                        ctx.beginPath();
+                        ctx.moveTo(x, 0);
+                        ctx.lineTo(x, height);
+                        ctx.stroke();
+                    }
+                }
+
+                // Horizontal Ground / Track Line
+                const groundY = height * 0.68;
+                ctx.strokeStyle = 'rgba(71, 85, 105, 0.55)';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(0, groundY);
+                ctx.lineTo(width, groundY);
+                ctx.stroke();
+
+                // Meter Scale Ticks along ground
+                ctx.fillStyle = 'rgba(148, 163, 184, 0.55)';
+                ctx.font = '500 9.5px "JetBrains Mono", monospace';
+                ctx.textAlign = 'center';
+                for (let m = -16; m <= 16; m += 4) {
+                    const x = centerX + m * pxPerMeter;
+                    if (x > 25 && x < width - 25) {
+                        ctx.beginPath();
+                        ctx.moveTo(x, groundY - 4);
+                        ctx.lineTo(x, groundY + 4);
+                        ctx.stroke();
+                        ctx.fillText(`${m > 0 ? '+' : ''}${m}m`, x, groundY + 15);
+                    }
+                }
+            }
+
+            // Helper: Draw High-Tech Ladder / Space-Ruler Shuttle
+            function drawRelativisticLadder(ctx, centerX, centerY, lengthPx, heightPx, isMovingRight, primaryColor) {
+                const leftX = centerX - lengthPx / 2;
+                const rightX = centerX + lengthPx / 2;
+                const topY = centerY - heightPx / 2;
+                const botY = centerY + heightPx / 2;
+
+                ctx.save();
+                ctx.shadowColor = primaryColor;
+                ctx.shadowBlur = 10;
+
+                // Top & Bottom Carbon-Cyan Rails of the Ladder
+                ctx.strokeStyle = primaryColor;
+                ctx.lineWidth = 3.2;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(leftX, topY);
+                ctx.lineTo(rightX, topY);
+                ctx.moveTo(leftX, botY);
+                ctx.lineTo(rightX, botY);
+                ctx.stroke();
+
+                // Semi-transparent energy core between rails
+                ctx.fillStyle = primaryColor === '#fbbf24'
+                    ? 'rgba(245, 158, 11, 0.16)'
+                    : 'rgba(34, 211, 238, 0.16)';
+                ctx.fillRect(leftX, topY, lengthPx, heightPx);
+
+                // 8 Rungs (Sprossen) along the 16m ladder (every 2m proper length)
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = primaryColor;
+                ctx.lineWidth = 2;
+                const numRungs = 8;
+                for (let i = 0; i <= numRungs; i++) {
+                    const rx = leftX + (i / numRungs) * lengthPx;
+                    ctx.beginPath();
+                    ctx.moveTo(rx, topY);
+                    ctx.lineTo(rx, botY);
+                    ctx.stroke();
+                }
+
+                // Glowing Nose & Tail Markers (Heck = Left, Spitze = Right)
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(leftX, centerY, 4, 0, Math.PI * 2);
+                ctx.arc(rightX, centerY, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Direction Arrow if moving
+                if (isMovingRight) {
+                    ctx.fillStyle = primaryColor;
+                    ctx.font = '700 10px "JetBrains Mono", monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Leiter (v →)', centerX, centerY + 3.5);
+                } else {
+                    ctx.fillStyle = primaryColor;
+                    ctx.font = '700 10px "JetBrains Mono", monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Ruhende Leiter (Eigenlänge 16,0 m)', centerX, centerY + 3.5);
+                }
+
+                ctx.restore();
+            }
+
+            // Helper: Draw Barn (Scheune) with Gate A (Left) and Gate B (Right), plus Gate Clocks & Laser Shutters
+            function drawBarnAndGates(ctx, barnCenterX, groundY, barnWidthPx, barnHeightPx, gateAFlash, gateBFlash, clockAText, clockBText, isMovingLeft) {
+                const gateAX = barnCenterX - barnWidthPx / 2;
+                const gateBX = barnCenterX + barnWidthPx / 2;
+                const roofY = groundY - barnHeightPx;
+                const peakY = roofY - 22;
+
+                ctx.save();
+
+                // Translucent Barn Interior & pitched roof
+                ctx.fillStyle = 'rgba(30, 41, 59, 0.42)';
+                ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
+                ctx.lineWidth = 2;
+
+                ctx.beginPath();
+                ctx.moveTo(gateAX, groundY);
+                ctx.lineTo(gateAX, roofY);
+                ctx.lineTo(barnCenterX, peakY);
+                ctx.lineTo(gateBX, roofY);
+                ctx.lineTo(gateBX, groundY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Roof structural beams
+                ctx.strokeStyle = 'rgba(148, 163, 184, 0.18)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(gateAX, roofY);
+                ctx.lineTo(gateBX, roofY);
+                ctx.moveTo(barnCenterX, peakY);
+                ctx.lineTo(barnCenterX, groundY);
+                ctx.stroke();
+
+                // Barn Label in Roof
+                ctx.fillStyle = '#cbd5e1';
+                ctx.font = '600 10px "JetBrains Mono", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(isMovingLeft ? '← Scheune' : 'Scheune (10,0 m)', barnCenterX, roofY - 5);
+
+                // Gate Pillars A (Left, Purple/Cyan) & B (Right, Rose/Cyan)
+                drawSingleGate(ctx, gateAX, roofY, groundY, gateAFlash, 'Tor A (Eingang)', clockAText, '#c084fc');
+                drawSingleGate(ctx, gateBX, roofY, groundY, gateBFlash, 'Tor B (Ausgang)', clockBText, '#fb7185');
+
+                ctx.restore();
+            }
+
+            function drawSingleGate(ctx, x, topY, botY, flashIntensity, label, clockText, color) {
+                ctx.save();
+
+                // Gate Frame Post
+                ctx.strokeStyle = flashIntensity > 0.05 ? '#ffffff' : color;
+                ctx.lineWidth = flashIntensity > 0.05 ? 4 : 2.5;
+                ctx.setLineDash([5, 3]);
+                ctx.beginPath();
+                ctx.moveTo(x, topY);
+                ctx.lineTo(x, botY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Active Laser Door Closure Flash!
+                if (flashIntensity > 0.02) {
+                    ctx.save();
+                    ctx.strokeStyle = color;
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = Math.min(1, flashIntensity);
+                    ctx.shadowColor = color;
+                    ctx.shadowBlur = 18;
+                    ctx.lineWidth = 6 * flashIntensity;
+
+                    // Vertical laser curtain closing the gate
+                    ctx.beginPath();
+                    ctx.moveTo(x, topY);
+                    ctx.lineTo(x, botY);
+                    ctx.stroke();
+
+                    // Glowing impact rings at top & bottom of gate
+                    ctx.beginPath();
+                    ctx.arc(x, (topY + botY) / 2, 10 + (1 - flashIntensity) * 18, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Badge "TOR ZU!"
+                    ctx.fillStyle = '#0f172a';
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.roundRect(x - 30, (topY + botY) / 2 - 10, 60, 20, 5);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '700 10px "JetBrains Mono", monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('⚡ TOR ZU!', x, (topY + botY) / 2 + 3.5);
+                    ctx.restore();
+                }
+
+                // Digital Clock Pill mounted above each gate
+                const pillW = 86;
+                const pillH = 30;
+                const pillY = topY - 38;
+
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+                ctx.strokeStyle = flashIntensity > 0.1 ? '#ffffff' : color;
+                ctx.lineWidth = flashIntensity > 0.1 ? 2 : 1.2;
+                ctx.beginPath();
+                ctx.roundRect(x - pillW / 2, pillY, pillW, pillH, 6);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = color;
+                ctx.font = '600 9px "Inter", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(label, x, pillY + 11);
+
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = '700 10px "JetBrains Mono", monospace';
+                ctx.fillText(clockText, x, pillY + 24);
+
+                ctx.restore();
+            }
+
+            // --- Draw Top Canvas: Rest Frame of the Barn ---
+            function drawBarnFrameCanvas(kin) {
+                const width = canvasBarn.parentElement.clientWidth;
+                const height = canvasBarn.parentElement.clientHeight;
+                const centerX = width * 0.5;
+                const groundY = height * 0.68;
+                const ladderY = groundY - 34;
+
+                // Scale: 16m ladder + margins fits cleanly
+                const pxPerMeter = Math.min(24, Math.max(12, (width - 120) / 34));
+                drawSpaceGrid(ctxBarn, width, height, centerX, pxPerMeter);
+
+                const barnWidthPx = BARN_PROPER_M * pxPerMeter;
+                const contractedLadderM = LADDER_PROPER_M * state.invGamma;
+                const ladderWidthPx = contractedLadderM * pxPerMeter;
+                const ladderCenterX = centerX + kin.offsetM * pxPerMeter;
+
+                // Flash intensity when t_barn is near 0 (offsetM near 0)
+                // Both gates A and B flash SIMULTANEOUSLY at offsetM = 0!
+                const flashDistM = Math.abs(kin.offsetM);
+                const simultaneousFlash = Math.max(0, 1 - flashDistM / 1.15);
+
+                const clockStr = `t = ${fmtDE(kin.tBarnNs, 1)} ns`;
+
+                // Draw Moving Contracted Ladder
+                drawRelativisticLadder(
+                    ctxBarn,
+                    ladderCenterX,
+                    ladderY,
+                    ladderWidthPx,
+                    24,
+                    true,
+                    '#22d3ee'
+                );
+
+                // Draw Stationary Barn & Simultaneous Gate Clocks
+                drawBarnAndGates(
+                    ctxBarn,
+                    centerX,
+                    groundY,
+                    barnWidthPx,
+                    82,
+                    simultaneousFlash,
+                    simultaneousFlash,
+                    clockStr,
+                    clockStr,
+                    false
+                );
+
+                // Dimension Bracket below Ground for Contracted Ladder Length
+                const bracketY = groundY + 34;
+                ctxBarn.save();
+                ctxBarn.strokeStyle = '#22d3ee';
+                ctxBarn.fillStyle = '#22d3ee';
+                ctxBarn.lineWidth = 1.6;
+                const lx1 = ladderCenterX - ladderWidthPx / 2;
+                const lx2 = ladderCenterX + ladderWidthPx / 2;
+                ctxBarn.beginPath();
+                ctxBarn.moveTo(lx1, bracketY - 4);
+                ctxBarn.lineTo(lx1, bracketY + 4);
+                ctxBarn.moveTo(lx2, bracketY - 4);
+                ctxBarn.lineTo(lx2, bracketY + 4);
+                ctxBarn.moveTo(lx1, bracketY);
+                ctxBarn.lineTo(lx2, bracketY);
+                ctxBarn.stroke();
+
+                ctxBarn.font = '700 10.5px "JetBrains Mono", monospace';
+                ctxBarn.textAlign = 'center';
+                ctxBarn.fillText(`Kontrahierte Leiter L = ${fmtDE(contractedLadderM, 1)} m`, ladderCenterX, bracketY + 14);
+                ctxBarn.restore();
+            }
+
+            // --- Draw Bottom Canvas: Rest Frame of the Ladder ---
+            function drawLadderFrameCanvas(kin) {
+                const width = canvasLadder.parentElement.clientWidth;
+                const height = canvasLadder.parentElement.clientHeight;
+                const centerX = width * 0.5;
+                const groundY = height * 0.68;
+                const ladderY = groundY - 34;
+
+                const pxPerMeter = Math.min(24, Math.max(12, (width - 120) / 34));
+                drawSpaceGrid(ctxLadder, width, height, centerX, pxPerMeter);
+
+                // In Ladder Frame:
+                // Ladder is at rest in the center with FULL proper length 16.0 m!
+                const ladderWidthPx = LADDER_PROPER_M * pxPerMeter;
+                // Barn is contracted to L_S' = 10.0 m / gamma and moves LEFT (so its center is at -offsetM)
+                const contractedBarnM = BARN_PROPER_M * state.invGamma;
+                const barnWidthPx = contractedBarnM * pxPerMeter;
+                const barnCenterX = centerX - kin.offsetM * pxPerMeter;
+
+                // Gate B flashes when offsetM == kin.offsetEventB_M (t' = t'_B < 0)
+                // Gate A flashes when offsetM == kin.offsetEventA_M (t' = t'_A > 0)
+                const flashB = Math.max(0, 1 - Math.abs(kin.offsetM - kin.offsetEventB_M) / 1.15);
+                const flashA = Math.max(0, 1 - Math.abs(kin.offsetM - kin.offsetEventA_M) / 1.15);
+
+                // What do the Barn's own clocks A and B read at time t' in the Ladder frame?
+                // Since both Barn clocks flash when they themselves read t_A = 0 and t_B = 0:
+                // At any Ladder time t', the Barn clocks advance at rate 1/gamma (time dilation of moving barn clocks!):
+                //   t_clockB(t') = (t' - t'_EventB) / gamma
+                //   t_clockA(t') = (t' - t'_EventA) / gamma
+                // Notice that at t' = t'_EventB, t_clockB reads 0.0 ns!
+                // And at t' = t'_EventA, t_clockA reads 0.0 ns!
+                // And at any instant t', t_clockB - t_clockA = (t'_EventA - t'_EventB)/gamma = v * L_barn0 / c^2!
+                const barnClockB_Ns = (kin.tLadderNs - kin.tPrimeEventB_Ns) / state.gamma;
+                const barnClockA_Ns = (kin.tLadderNs - kin.tPrimeEventA_Ns) / state.gamma;
+
+                const clockAStr = `t_A=${fmtDE(barnClockA_Ns, 1)}ns`;
+                const clockBStr = `t_B=${fmtDE(barnClockB_Ns, 1)}ns`;
+
+                // Draw Ghost Marker of where Event B and Event A happen in Ladder Frame
+                const eventBX_LadderFrame = centerX + (BARN_PROPER_M / 2) * state.gamma * pxPerMeter;
+                const eventAX_LadderFrame = centerX - (BARN_PROPER_M / 2) * state.gamma * pxPerMeter;
+
+                ctxLadder.save();
+                ctxLadder.font = '600 9.5px "JetBrains Mono", monospace';
+                ctxLadder.textAlign = 'center';
+
+                // Event 1 Marker (Door B Flash location)
+                ctxLadder.strokeStyle = 'rgba(251, 113, 133, 0.4)';
+                ctxLadder.setLineDash([3, 3]);
+                ctxLadder.beginPath();
+                ctxLadder.moveTo(eventBX_LadderFrame, groundY - 95);
+                ctxLadder.lineTo(eventBX_LadderFrame, groundY);
+                ctxLadder.stroke();
+                ctxLadder.fillStyle = '#fb7185';
+                ctxLadder.fillText(`1. Blitz Tor B (${fmtDE(kin.tPrimeEventB_Ns, 1)} ns)`, eventBX_LadderFrame, groundY + 46);
+
+                // Event 2 Marker (Door A Flash location)
+                ctxLadder.strokeStyle = 'rgba(192, 132, 252, 0.4)';
+                ctxLadder.beginPath();
+                ctxLadder.moveTo(eventAX_LadderFrame, groundY - 95);
+                ctxLadder.lineTo(eventAX_LadderFrame, groundY);
+                ctxLadder.stroke();
+                ctxLadder.fillStyle = '#c084fc';
+                ctxLadder.fillText(`2. Blitz Tor A (+${fmtDE(kin.tPrimeEventA_Ns, 1)} ns)`, eventAX_LadderFrame, groundY + 46);
+                ctxLadder.restore();
+
+                // Draw Stationary Full-Length Ladder (16.0 m)
+                drawRelativisticLadder(
+                    ctxLadder,
+                    centerX,
+                    ladderY,
+                    ladderWidthPx,
+                    24,
+                    false,
+                    '#fbbf24'
+                );
+
+                // Draw Moving Contracted Barn (moves left)
+                drawBarnAndGates(
+                    ctxLadder,
+                    barnCenterX,
+                    groundY,
+                    barnWidthPx,
+                    82,
+                    flashA,
+                    flashB,
+                    clockAStr,
+                    clockBStr,
+                    true
+                );
+
+                // Dimension Bracket for Contracted Barn Length
+                const bracketY = groundY + 26;
+                ctxLadder.save();
+                ctxLadder.strokeStyle = '#38bdf8';
+                ctxLadder.fillStyle = '#38bdf8';
+                ctxLadder.lineWidth = 1.6;
+                const bx1 = barnCenterX - barnWidthPx / 2;
+                const bx2 = barnCenterX + barnWidthPx / 2;
+                ctxLadder.beginPath();
+                ctxLadder.moveTo(bx1, bracketY - 4);
+                ctxLadder.lineTo(bx1, bracketY + 4);
+                ctxLadder.moveTo(bx2, bracketY - 4);
+                ctxLadder.lineTo(bx2, bracketY + 4);
+                ctxLadder.moveTo(bx1, bracketY);
+                ctxLadder.lineTo(bx2, bracketY);
+                ctxLadder.stroke();
+
+                ctxLadder.font = '700 10px "JetBrains Mono", monospace';
+                ctxLadder.textAlign = 'center';
+                ctxLadder.fillText(`Scheune L_S' = ${fmtDE(contractedBarnM, 1)} m`, barnCenterX, bracketY - 7);
+                ctxLadder.restore();
+            }
+
+            // --- Draw Minkowski Spacetime Diagram (ct over x) ---
+            function drawMinkowskiDiagram(kin) {
+                const width = canvasMink.parentElement.clientWidth;
+                const height = canvasMink.parentElement.clientHeight;
+                ctxMink.clearRect(0, 0, width, height);
+
+                const originX = width * 0.5;
+                const originY = height * 0.52;
+                const scaleX = (width * 0.36) / 10; // pixels per meter
+                const scaleCT = (height * 0.38) / 10; // pixels per meter of ct
+
+                // Subtle Grid
+                ctxMink.strokeStyle = 'rgba(51, 65, 85, 0.3)';
+                ctxMink.lineWidth = 1;
+                for (let m = -12; m <= 12; m += 4) {
+                    const gx = originX + m * scaleX;
+                    ctxMink.beginPath();
+                    ctxMink.moveTo(gx, 0);
+                    ctxMink.lineTo(gx, height);
+                    ctxMink.stroke();
+                }
+
+                // Shaded Worldtube of the Ladder (moving at beta = dx / d(ct))
+                // At ct = 0, ladder spans from x = -8/gamma to x = +8/gamma
+                const halfLadderBarnM = (LADDER_PROPER_M / 2) * state.invGamma;
+                const ctMax = 11;
+                const shiftAtMax = state.beta * ctMax;
+
+                ctxMink.save();
+                ctxMink.fillStyle = 'rgba(251, 191, 36, 0.11)';
+                ctxMink.beginPath();
+                ctxMink.moveTo(originX + (-halfLadderBarnM - shiftAtMax) * scaleX, originY + ctMax * scaleCT);
+                ctxMink.lineTo(originX + (+halfLadderBarnM - shiftAtMax) * scaleX, originY + ctMax * scaleCT);
+                ctxMink.lineTo(originX + (+halfLadderBarnM + shiftAtMax) * scaleX, originY - ctMax * scaleCT);
+                ctxMink.lineTo(originX + (-halfLadderBarnM + shiftAtMax) * scaleX, originY - ctMax * scaleCT);
+                ctxMink.closePath();
+                ctxMink.fill();
+
+                // Ladder Nose & Tail Worldlines
+                ctxMink.strokeStyle = 'rgba(251, 191, 36, 0.65)';
+                ctxMink.lineWidth = 1.6;
+                ctxMink.beginPath();
+                // Tail worldline
+                ctxMink.moveTo(originX + (-halfLadderBarnM - shiftAtMax) * scaleX, originY + ctMax * scaleCT);
+                ctxMink.lineTo(originX + (-halfLadderBarnM + shiftAtMax) * scaleX, originY - ctMax * scaleCT);
+                // Nose worldline
+                ctxMink.moveTo(originX + (+halfLadderBarnM - shiftAtMax) * scaleX, originY + ctMax * scaleCT);
+                ctxMink.lineTo(originX + (+halfLadderBarnM + shiftAtMax) * scaleX, originY - ctMax * scaleCT);
+                ctxMink.stroke();
+                ctxMink.restore();
+
+                // Barn Door Worldlines (Vertical lines at x_A = -5m and x_B = +5m)
+                const xA_px = originX - 5 * scaleX;
+                const xB_px = originX + 5 * scaleX;
+
+                ctxMink.save();
+                ctxMink.strokeStyle = '#c084fc';
+                ctxMink.lineWidth = 2;
+                ctxMink.setLineDash([4, 3]);
+                ctxMink.beginPath();
+                ctxMink.moveTo(xA_px, 12);
+                ctxMink.lineTo(xA_px, height - 12);
+                ctxMink.stroke();
+
+                ctxMink.strokeStyle = '#fb7185';
+                ctxMink.beginPath();
+                ctxMink.moveTo(xB_px, 12);
+                ctxMink.lineTo(xB_px, height - 12);
+                ctxMink.stroke();
+                ctxMink.restore();
+
+                // Axes (x horizontal = Barn Simultaneity t=0, ct vertical)
+                ctxMink.strokeStyle = '#38bdf8';
+                ctxMink.lineWidth = 1.8;
+                ctxMink.beginPath();
+                ctxMink.moveTo(12, originY);
+                ctxMink.lineTo(width - 12, originY);
+                ctxMink.stroke();
+
+                ctxMink.strokeStyle = '#64748b';
+                ctxMink.lineWidth = 1.5;
+                ctxMink.beginPath();
+                ctxMink.moveTo(originX, 10);
+                ctxMink.lineTo(originX, height - 10);
+                ctxMink.stroke();
+
+                // Tilted Line of Simultaneity of the Ladder (t' = current tLadderNs)
+                // Equation in (x, ct): ct - beta * x = ct' / gamma  =>  ct = beta * x + offsetM / beta * (1 - beta^2)
+                // Wait: At current state.offsetM, the event on the ladder center worldline (x = offsetM, ct = offsetM / beta) is on this tilted line!
+                // Actually, to keep the tilted line inside the diagram, we clamp its vertical intercept gently while showing its exact slope beta!
+                const currentCT_m = (kin.offsetM / 16) * 6.5;
+                ctxMink.save();
+                ctxMink.strokeStyle = '#fbbf24';
+                ctxMink.lineWidth = 2.2;
+                const spanX_m = 11;
+                const yLeft = originY - (currentCT_m - state.beta * spanX_m) * scaleCT;
+                const yRight = originY - (currentCT_m + state.beta * spanX_m) * scaleCT;
+                ctxMink.beginPath();
+                ctxMink.moveTo(originX - spanX_m * scaleX, yLeft);
+                ctxMink.lineTo(originX + spanX_m * scaleX, yRight);
+                ctxMink.stroke();
+                ctxMink.restore();
+
+                // Plot Key Spacetime Events E_A (x = -5, ct = 0) and E_B (x = +5, ct = 0)
+                ctxMink.fillStyle = '#c084fc';
+                ctxMink.beginPath();
+                ctxMink.arc(xA_px, originY, 5, 0, Math.PI * 2);
+                ctxMink.fill();
+
+                ctxMink.fillStyle = '#fb7185';
+                ctxMink.beginPath();
+                ctxMink.arc(xB_px, originY, 5, 0, Math.PI * 2);
+                ctxMink.fill();
+
+                // Labels
+                ctxMink.font = '700 10px "JetBrains Mono", monospace';
+                ctxMink.fillStyle = '#c084fc';
+                ctxMink.textAlign = 'right';
+                ctxMink.fillText('E_A (Tor A)', xA_px - 6, originY - 7);
+
+                ctxMink.fillStyle = '#fb7185';
+                ctxMink.textAlign = 'left';
+                ctxMink.fillText('E_B (Tor B)', xB_px + 6, originY + 14);
+
+                ctxMink.fillStyle = '#38bdf8';
+                ctxMink.textAlign = 'left';
+                ctxMink.fillText('t = 0 (Scheune)', 16, originY - 6);
+
+                ctxMink.fillStyle = '#fbbf24';
+                ctxMink.textAlign = 'right';
+                ctxMink.fillText('t\' = konst. (Leiter)', width - 14, yRight - 6);
+            }
+
+            // Update Time Readouts on Scrubber
+            function updateTimeReadouts(kin) {
+                scrubTBarn.textContent = `${kin.tBarnNs >= 0 ? '+' : ''}${fmtDE(kin.tBarnNs, 1)} ns`;
+                scrubTLadder.textContent = `${kin.tLadderNs >= 0 ? '+' : ''}${fmtDE(kin.tLadderNs, 1)} ns`;
+
+                // Dynamic Banner Highlights during Gate Flashes
+                if (Math.abs(kin.offsetM) < 1.1) {
+                    topEventBanner.innerHTML = `<span class="text-emerald-400 font-bold">⚡ JETZT (t = 0): Tor A & Tor B schließen GLEICHZEITIG!</span>`;
+                } else {
+                    topEventBanner.innerHTML = `Tor-Ereignisse A & B finden bei <strong class="font-mono-tech text-cyan-400">t = 0,0 ns gleichzeitig</strong> statt`;
+                }
+            }
+
+            // --- Main Animation Loop ---
+            function animate(timestamp) {
+                if (!state.lastFrameTimestamp) {
+                    state.lastFrameTimestamp = timestamp;
+                }
+                const dtSeconds = Math.min(0.1, (timestamp - state.lastFrameTimestamp) / 1000);
+                state.lastFrameTimestamp = timestamp;
+
+                if (state.isRunning) {
+                    // Advance timeParam smoothly from -100 to +100
+                    const speedUnitsPerSec = 36 * state.simSpeedMultiplier * (0.45 + 0.55 * state.beta);
+                    state.timeParam += dtSeconds * speedUnitsPerSec;
+                    if (state.timeParam > 100) {
+                        state.timeParam = -100;
+                    }
+                    timeScrubber.value = state.timeParam;
+                }
+
+                const kin = getCurrentKinematics();
+                updateTimeReadouts(kin);
+                drawBarnFrameCanvas(kin);
+                drawLadderFrameCanvas(kin);
+                drawMinkowskiDiagram(kin);
+
+                requestAnimationFrame(animate);
+            }
+
+            // --- Event Listeners ---
+            velocitySlider.addEventListener('input', (e) => {
+                updatePhysicsParameters(e.target.value);
+            });
+
+            presetBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const v = btn.getAttribute('data-v');
+                    velocitySlider.value = v;
+                    updatePhysicsParameters(v);
+                });
+            });
+
+            timeScrubber.addEventListener('input', (e) => {
+                // Pause automatically when user manually scrubs timeline
+                if (state.isRunning) {
+                    btnPlayPause.click();
+                }
+                state.timeParam = Number(e.target.value);
+            });
+
+            // Jump to Event Buttons (Pause at the exact physical moment!)
+            function pauseAtTimeParam(targetParam) {
+                if (state.isRunning) {
+                    btnPlayPause.click();
+                }
+                state.timeParam = Math.max(-100, Math.min(100, targetParam));
+                timeScrubber.value = state.timeParam;
+            }
+
+            btnJumpB.addEventListener('click', () => {
+                const kin = getCurrentKinematics();
+                pauseAtTimeParam(kin.timeParamEventB);
+            });
+
+            btnJumpCenter.addEventListener('click', () => {
+                pauseAtTimeParam(0);
+            });
+
+            btnJumpA.addEventListener('click', () => {
+                const kin = getCurrentKinematics();
+                pauseAtTimeParam(kin.timeParamEventA);
+            });
+
+            btnPlayPause.addEventListener('click', () => {
+                state.isRunning = !state.isRunning;
+                if (state.isRunning) {
+                    iconPause.classList.remove('hidden');
+                    iconPlay.classList.add('hidden');
+                    textPlayPause.textContent = 'Pause';
+                } else {
+                    iconPause.classList.add('hidden');
+                    iconPlay.classList.remove('hidden');
+                    textPlayPause.textContent = 'Start';
+                }
+            });
+
+            btnReset.addEventListener('click', () => {
+                pauseAtTimeParam(0);
+            });
+
+            btnSlowmo.addEventListener('click', () => {
+                if (state.simSpeedMultiplier === 1.0) {
+                    state.simSpeedMultiplier = 0.30;
+                    slowmoLabel.textContent = 'Zeitlupe (0,3x)';
+                    slowmoDot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+                } else {
+                    state.simSpeedMultiplier = 1.0;
+                    slowmoLabel.textContent = 'Normal (1,0x)';
+                    slowmoDot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                resizeCanvases();
+            });
+
+            window.onload = function () {
+                resizeCanvases();
+                updatePhysicsParameters(velocitySlider.value);
+                requestAnimationFrame(animate);
+            };
+        })();
+    </script>
+</body>
+</html>

@@ -17,12 +17,14 @@
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | /system/identity/set name=Router1                            | um dem Router einen Namen zu vergeben                        |
 | /ip/address/add address=`?` interface=ether`?`               | um einem interface eine selbst gewählte ip addresse zuzuweisen |
+| /ipv6/address/add address=`?` interface=ether`?` advertise=yes | addressen hinzufügen für ipv6                                |
 | /ip/route/print                                              | hier sehe ich welche addressen configuriert sind             |
 | /ip/address/print                                            | hier sehe ich die fix eingetragenen addressen mit index      |
 | /ip/address/remove number=`?`                                | die number ist der index beginnend mit 0                     |
 | /interface/bridge/add name=br                                | um einen switch zu erstellen mit dem namen br                |
 | /interface/bridge/port/add bridge=br interface=ether`?`      | hier weise ich dem switch einen port zu                      |
 | /ip/route/add dst-address=`?/?` gateway=`?`                  | statisches routen                                            |
+| /ipv6/route/add dst-address=`?`/`?` gateway=`?`              | statisch für ipv6                                            |
 | /ip/pool/add name=`?` ranges=`?`-`?`                         | ein DHCP pool erstellen                                      |
 | /ip/dhcp-server/network/add address=`?`/`?` gateway=`?`      |                                                              |
 | /ip/dhcp-server/add name=`?` interface=br address-pool=`?` disabled=no |                                                              |
