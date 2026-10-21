@@ -24,7 +24,16 @@
 
 | agiles PM       | klassisches PM      | hybrides PM |
 | --------------- | ------------------- | ----------- |
-| frühes Feedback | spätes Feedback     |             |
-| Innovation      | definierte Prozesse |             |
-|                 |                     |             |
+| frühes Feedback | spätes Feedback     | .           |
+| Innovation      | definierte Prozesse | .           |
+| ...             | ...                 | .           |
 
+**Vertreter / Vorgehensmodele:**
+
+| Klassisch        | Agil   |
+| ---------------- | ------ |
+| Wasserfallmodell | Scrum  |
+| V-Modell         | Kanban |
+| (Spiralmodell)   | XP     |
+
+Cynefin-Framework -> klassisch oder agil ?

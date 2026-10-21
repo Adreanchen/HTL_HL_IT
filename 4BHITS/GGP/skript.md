@@ -69,3 +69,38 @@ Nachfrage nicht funktioniert ...
 
 * ältere Menschen ohne Internet
 * Chinesische Autos
+
+### 4.3. Marktformen
+
+**Monopol**
+**ein einziger Anbieter** (Angebotsmonopol) oder ZB
+
+* ORF
+* Casino Austria, Österreichischen Lotterien, Rubbellose
+* OMV
+* Malboro (?)
+* Briefzustellung
+
+**ein einziger Nachfrager** (Nachfragemonopol) auf dem Markt bestimmt den Preis (viele anbieter)
+
+* Rüstungsindustrie
+
+**Oligopol**
+wenige Anbieter oder Nachfrager
+**Angebotsoligopol**: ZB
+
+* ÖBB/Westbahn
+* Stromanbieter
+* Trafik/Tankstelle
+* Paketzustellung
+* Tarife
+
+**Nachfrageoligopol**: ZB
+
+* Bauern
+
+**Polypol**
+
+viele Anbieter und viele Nachfrager ZB
+
+* Supermarkt

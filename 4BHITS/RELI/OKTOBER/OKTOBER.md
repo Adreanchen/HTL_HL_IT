@@ -38,7 +38,7 @@
 * Landflucht & Urbanisierung
 * Pauperismus
 
-**Soziale Problemfelder in Österreich**
+**Soziale Problem Felder in Österreich**
 
 - Wohnungsnot & Wohnkosten:
 - Geringe Bildungsmobilität
@@ -46,7 +46,7 @@
 - Altersarmut & Gender Pension Gap 
 - Inflation & Reallohnverlust
 
-### Soziale Problemfelder in Südkorea
+### Soziale Problem Felder in Südkorea
 
 - Demografischer Kollaps
 - Extremer Bildungsdruck
@@ -66,3 +66,25 @@
   Mit seiner Enzyklika *Rerum Novarum* (1891) forderte Papst Leo XIII. gerechte Löhne, Arbeitsschutz und Gewerkschaften für ausgebeutete Arbeiter. Gleichzeitig lehnte er den Sozialismus ab und verteidigte das Privateigentum, das aber dem Gemeinwohl dienen müsse.
 
 [doku darüber](https://www.youtube.com/watch?v=_flk1alabeA)
+
+## Katholische Soziallehre
+
+<img src="FritzKatholischeSoziallehre.png">
+
+### [Dollar Street - photos as data to kill country stereotypes](https://www.gapminder.org/dollar-street)
+
+* **Was ist der Zweck der Website?**
+
+Stereotype abbauen / zeigen, dass der Lebensstandard weltweit vor allem vom Einkommen/was im monat ausgegeben wird abhängt, nicht von Kultur oder Religion. 
+
+* **Wie ist sie aufgebaut?**
+
+Die Welt als Straße - links leben die Ärmsten, rechts die Wohlhabendsten (dargestellt durch Kacheln sortiert nach Monatseinkommen)
+
+* **Was kann man einstellen?**
+
+Betten, Familien, Häuser, Haustiere, Zähne, ... (auch nach Länder/Kontinente)
+
+* **Nenne 1 Beispiel, welches besonders eindrucksvoll ist - und warum.**
+
+[mein Beispiel](https://www.gapminder.org/dollar-street?media=all&p=3&active=5ec4fa7cf0611d7ddd742015)
