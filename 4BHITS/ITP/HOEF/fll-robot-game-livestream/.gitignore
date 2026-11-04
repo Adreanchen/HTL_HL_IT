@@ -1,0 +1,14 @@
+# assets
+teams.txt
+
+# dependencies
+node_modules
+
+# build
+build
+
+# env
+.env
+
+# misc
+.DS_Store

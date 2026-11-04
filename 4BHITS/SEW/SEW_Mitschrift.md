@@ -137,7 +137,7 @@ Das **Builder-Entwurfsmuster** ist eine Möglichkeit Objekte zu erstellen. Es hi
 
 Das **Builder (Pattern)** bietet eine elegante Lösung, bei der die unveränderlichkeit der Objekte erhalten bleibt.
 
-```
+```java
 public static void main (String[] args) { 
     User user1 = new User.UserBuilder("Bart", "Simpson") 
         .age(13) 
@@ -168,3 +168,48 @@ public static void main (String[] args) {
 ```
 
 > Die konkrete Implementierung des `UserBuilder` findet sich im Projekt `BuilderPattern`.
+
+## Singleton (Pattern) 
+
+Das Entwurfsmuster **"Sinleton"** stellt sicher, dass von einer Klasse genau ein Objekt existiert.
+
+**Implementierung:**
+
+```java
+public class MySingleton { 
+    private static MySingleton instance; 
+    private MySingleton() {} 
+    public static synchronized MySingleton getInstance() { 
+        if (instance == null) { 
+            instance = new MySingleton(); 
+        } 
+        return instance; 
+    } 
+
+    // other methods... 
+    public int getValue(){ 
+        return 1; 
+    } 
+} 
+```
+
+Das Schlüsselwort `"synchronized"` stellt sicher, dass der Singleton nur 1x initialisiert wird (Thread sicher).
+
+Zugriff aus anderer Klasse: `MySingleton.getInstance().getValue()`
+
+**Alternative Implementierung mittels enum:**
+
+```java
+public enum MySingleton{ 
+    INSTANCE; 
+    public MySingleton getInstance(){ 
+        return INSTANCE; 
+    } 
+} 
+```
+
+**Anwendungsbeispiel:**
+
+z.B. Zugriff auf eine zentrale Logging-Funktionalität in eine Datei
+
+> **Vorsicht:** Eine Singleton Implementierung sollte sehr sparsam eingesetzt werden, da die Gefahr besteht, quasi ein Äquivalent zu globalen Variablen zu schaffen. Die Testbarkeit wird darüber hinaus sehr erschwert.

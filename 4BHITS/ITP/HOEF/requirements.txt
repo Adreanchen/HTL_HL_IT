@@ -1,0 +1,17 @@
+# Unified Requirements for FLL Vision Backend & YOLOv8 GPU Robot Tracker
+--extra-index-url https://download.pytorch.org/whl/cu124
+
+# GPU / Deep Learning (YOLOv8 + CUDA 12.4)
+torch>=2.4.0
+torchvision>=0.19.0
+ultralytics>=8.3.0
+
+# Computer Vision & Math
+numpy==1.26.4
+opencv-contrib-python>=4.10.0
+PyYAML>=6.0.1
+
+# Web Stream & Remote Control Server (fll-vision)
+fastapi
+uvicorn
+websockets

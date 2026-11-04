@@ -1,0 +1,2214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>FLL Match Control Studio</title>
+	<style>
+		:root {
+			--bg: #f8fafc;
+			--surface: #ffffff;
+			--surface-subtle: #f1f5f9;
+			--border: #e2e8f0;
+			--border-strong: #cbd5e1;
+			--text: #0f172a;
+			--text-secondary: #475569;
+			--text-muted: #64748b;
+
+			/* Primary Accent: Royal Blue */
+			--primary: #2563eb;
+			--primary-hover: #1d4ed8;
+			--primary-soft: rgba(37, 99, 235, 0.08);
+			--primary-ring: rgba(37, 99, 235, 0.22);
+
+			/* FLL Team Accents */
+			--red: #dc2626;
+			--red-soft: #fef2f2;
+			--red-border: #fecaca;
+			--blue: #0284c7;
+			--blue-soft: #f0f9ff;
+			--blue-border: #bae6fd;
+
+			--green: #16a34a;
+			--green-hover: #15803d;
+			--amber: #d97706;
+
+			--radius-sm: 8px;
+			--radius-md: 12px;
+			--radius-lg: 16px;
+			--shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
+			--shadow-md: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+			--shadow-lg: 0 12px 28px -6px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+		}
+
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		html {
+			scroll-behavior: smooth;
+		}
+
+		body {
+			background: var(--bg);
+			color: var(--text);
+			font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+			font-size: 14px;
+			line-height: 1.5;
+			-webkit-font-smoothing: antialiased;
+			min-height: 100vh;
+		}
+
+		/* Intuitive Top Navigation */
+		.navbar {
+			position: sticky;
+			top: 0;
+			z-index: 40;
+			background: rgba(255, 255, 255, 0.88);
+			backdrop-filter: blur(10px);
+			border-bottom: 1px solid var(--border);
+		}
+
+		.navbar__inner {
+			width: 80%;
+			margin: 0 auto;
+			padding: 14px 0;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 16px;
+		}
+
+		.brand {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			font-size: 16px;
+			font-weight: 700;
+			letter-spacing: -0.02em;
+			color: var(--text);
+			text-decoration: none;
+		}
+
+		.brand__badge {
+			width: 28px;
+			height: 28px;
+			border-radius: 8px;
+			background: var(--primary);
+			color: #ffffff;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 12px;
+			font-weight: 800;
+			letter-spacing: 0.02em;
+			box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+		}
+
+		.nav-links {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+
+		.nav-link {
+			color: var(--text-secondary);
+			text-decoration: none;
+			font-size: 13px;
+			font-weight: 500;
+			padding: 6px 12px;
+			border-radius: var(--radius-sm);
+			transition: color 0.15s ease, background 0.15s ease;
+		}
+
+		.nav-link:hover {
+			color: var(--primary);
+			background: var(--primary-soft);
+		}
+
+		@media (max-width: 720px) {
+			.nav-links {
+				display: none;
+			}
+			.navbar__inner {
+				width: 92%;
+				padding: 12px 0;
+			}
+		}
+
+		.status-group {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.status {
+			display: inline-flex;
+			align-items: center;
+			gap: 7px;
+			font-size: 12px;
+			font-weight: 600;
+			color: var(--text-secondary);
+			padding: 5px 12px;
+			border: 1px solid var(--border);
+			border-radius: 999px;
+			background: var(--surface);
+		}
+
+		.status__dot {
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background: var(--amber);
+		}
+
+		.status--live .status__dot {
+			background: var(--green);
+			box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.16);
+		}
+
+		.status--offline .status__dot {
+			background: var(--red);
+		}
+
+		/* Main Container: 80% Screen Width */
+		.container {
+			width: 80%;
+			margin: 0 auto;
+			padding: 28px 0 56px;
+			display: flex;
+			flex-direction: column;
+			gap: 24px;
+		}
+
+		@media (max-width: 720px) {
+			.container {
+				width: 92%;
+				padding: 16px 0 40px;
+				gap: 18px;
+			}
+		}
+
+		/* Prominent Hero Section with Primary CTA */
+		.hero {
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			padding: 28px 32px;
+			box-shadow: var(--shadow-lg);
+			display: grid;
+			grid-template-columns: 1.25fr 1fr;
+			align-items: center;
+			gap: 28px;
+		}
+
+		@media (max-width: 880px) {
+			.hero {
+				grid-template-columns: 1fr;
+				padding: 22px 20px;
+				gap: 20px;
+			}
+		}
+
+		.hero__title {
+			font-size: clamp(22px, 2.5vw, 28px);
+			font-weight: 700;
+			letter-spacing: -0.025em;
+			color: var(--text);
+			margin-bottom: 16px;
+		}
+
+		.active-match {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 12px;
+		}
+
+		@media (max-width: 480px) {
+			.active-match {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		.active-side {
+			padding: 12px 14px;
+			border-radius: var(--radius-md);
+			border: 1px solid var(--border);
+			transition: transform 0.15s ease;
+		}
+
+		.active-side--red {
+			background: var(--red-soft);
+			border-color: var(--red-border);
+		}
+
+		.active-side--blue {
+			background: var(--blue-soft);
+			border-color: var(--blue-border);
+		}
+
+		.active-side__tag {
+			font-size: 11px;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			margin-bottom: 2px;
+		}
+
+		.active-side--red .active-side__tag {
+			color: var(--red);
+		}
+
+		.active-side--blue .active-side__tag {
+			color: var(--blue);
+		}
+
+		.active-side__name {
+			font-size: 16px;
+			font-weight: 700;
+			color: var(--text);
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.hero__timer-card {
+			background: var(--surface-subtle);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-md);
+			padding: 20px 22px;
+			display: flex;
+			flex-direction: column;
+			gap: 14px;
+		}
+
+		.timer-readout {
+			display: flex;
+			align-items: baseline;
+			justify-content: space-between;
+			gap: 12px;
+		}
+
+		.timer-digits {
+			font-size: clamp(44px, 5vw, 56px);
+			font-weight: 800;
+			font-variant-numeric: tabular-nums;
+			letter-spacing: -0.03em;
+			line-height: 1;
+			color: var(--text);
+		}
+
+		.timer-digits--alert {
+			color: var(--red);
+		}
+
+		.timer-stage {
+			font-size: 12px;
+			font-weight: 600;
+			color: var(--text-secondary);
+			padding: 5px 10px;
+			border-radius: 999px;
+			background: var(--surface);
+			border: 1px solid var(--border);
+		}
+
+		.timer-stage--active {
+			color: var(--green);
+			border-color: rgba(22, 163, 74, 0.35);
+			background: #f0fdf4;
+		}
+
+		.timer-stage--alert {
+			color: var(--red);
+			border-color: var(--red-border);
+			background: var(--red-soft);
+		}
+
+		.timer-controls {
+			display: grid;
+			grid-template-columns: 1.6fr 1fr;
+			gap: 10px;
+		}
+
+		/* Buttons & Inputs */
+		button {
+			appearance: none;
+			border: 1px solid var(--border-strong);
+			background: var(--surface);
+			color: var(--text);
+			font: inherit;
+			font-size: 13px;
+			font-weight: 600;
+			padding: 10px 16px;
+			min-height: 42px;
+			border-radius: var(--radius-sm);
+			cursor: pointer;
+			box-shadow: var(--shadow-sm);
+			transition: all 0.15s ease;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 6px;
+		}
+
+		button:hover:not(:disabled) {
+			background: var(--surface-subtle);
+			border-color: #94a3b8;
+		}
+
+		button:focus-visible {
+			outline: none;
+			box-shadow: 0 0 0 3px var(--primary-ring);
+		}
+
+		button:active:not(:disabled) {
+			transform: translateY(1px);
+		}
+
+		button:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+
+		.btn-cta {
+			background: var(--primary);
+			border-color: var(--primary);
+			color: #ffffff;
+			font-size: 14px;
+			font-weight: 700;
+			box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+		}
+
+		.btn-cta:hover:not(:disabled) {
+			background: var(--primary-hover);
+			border-color: var(--primary-hover);
+		}
+
+		.btn-primary {
+			background: var(--primary);
+			border-color: var(--primary);
+			color: #ffffff;
+		}
+
+		.btn-primary:hover:not(:disabled) {
+			background: var(--primary-hover);
+			border-color: var(--primary-hover);
+		}
+
+		.btn-active {
+			background: var(--primary-soft);
+			border-color: var(--primary);
+			color: var(--primary);
+		}
+
+		.btn-danger-confirm {
+			background: var(--red);
+			border-color: var(--red);
+			color: #ffffff;
+		}
+
+		.btn-sm {
+			padding: 6px 12px;
+			min-height: 32px;
+			font-size: 12px;
+		}
+
+		.checkbox-row {
+			display: inline-flex;
+			align-items: center;
+			gap: 9px;
+			font-size: 13px;
+			color: var(--text-secondary);
+			cursor: pointer;
+			user-select: none;
+		}
+
+		.checkbox-row input {
+			width: 16px;
+			height: 16px;
+			accent-color: var(--primary);
+			cursor: pointer;
+		}
+
+		/* Section Panel Styling */
+		.panel {
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			padding: 26px 32px;
+			box-shadow: var(--shadow-md);
+		}
+
+		@media (max-width: 600px) {
+			.panel {
+				padding: 20px 16px;
+			}
+		}
+
+		.panel__header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 10px;
+			margin-bottom: 18px;
+			padding-bottom: 12px;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.panel__title {
+			font-size: 16px;
+			font-weight: 700;
+			color: var(--text);
+			letter-spacing: -0.01em;
+		}
+
+		.panel__meta {
+			font-size: 12px;
+			font-weight: 600;
+			color: var(--primary);
+			background: var(--primary-soft);
+			padding: 4px 12px;
+			border-radius: 999px;
+		}
+
+		/* Team Selector Form */
+		.team-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 16px;
+			margin-bottom: 16px;
+		}
+
+		@media (max-width: 600px) {
+			.team-grid {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		.field {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+		}
+
+		.field__label {
+			font-size: 12px;
+			font-weight: 600;
+			color: var(--text-secondary);
+		}
+
+		.field__label--red {
+			color: var(--red);
+		}
+
+		.field__label--blue {
+			color: var(--blue);
+		}
+
+		select,
+		input[type="text"],
+		input[type="number"],
+		textarea {
+			width: 100%;
+			background: var(--surface);
+			color: var(--text);
+			border: 1px solid var(--border-strong);
+			border-radius: var(--radius-sm);
+			padding: 9px 12px;
+			min-height: 40px;
+			font: inherit;
+			font-size: 13px;
+			transition: border-color 0.15s ease, box-shadow 0.15s ease;
+		}
+
+		select:focus,
+		input[type="text"]:focus,
+		input[type="number"]:focus,
+		textarea:focus {
+			outline: none;
+			border-color: var(--primary);
+			box-shadow: 0 0 0 3px var(--primary-ring);
+		}
+
+		textarea {
+			resize: vertical;
+			min-height: 130px;
+			font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+			font-size: 12px;
+			line-height: 1.5;
+		}
+
+		.team-actions {
+			display: flex;
+			gap: 12px;
+			margin-top: 10px;
+		}
+
+		.team-actions > button {
+			min-width: 150px;
+		}
+
+		@media (max-width: 520px) {
+			.team-actions {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+			}
+			.team-actions > button {
+				min-width: 0;
+			}
+		}
+
+		.unsaved-note {
+			margin-top: 10px;
+			font-size: 12px;
+			font-weight: 500;
+			color: var(--amber);
+		}
+
+		/* Vision & Table Calibration */
+		.calib-info {
+			background: var(--surface-subtle);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-md);
+			padding: 12px 14px;
+			font-size: 13px;
+			color: var(--text-secondary);
+			margin-bottom: 14px;
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+		}
+
+		.calib-coords {
+			font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+			font-size: 11.5px;
+			color: var(--text);
+			font-weight: 600;
+		}
+
+		.calib-buttons {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+		}
+
+		.calib-buttons > button {
+			flex: 1 1 auto;
+		}
+
+		.media-box {
+			margin-top: 16px;
+			border-top: 1px solid var(--border);
+			padding-top: 16px;
+		}
+
+		/* Manual Crop Editor */
+		.editor-help {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 10px;
+			font-size: 12px;
+			color: var(--text-secondary);
+			margin-bottom: 10px;
+		}
+
+		.crop-stage {
+			position: relative;
+			width: 100%;
+			background: #0f172a;
+			border: 1px solid var(--border-strong);
+			border-radius: var(--radius-md);
+			overflow: hidden;
+			user-select: none;
+			touch-action: none;
+		}
+
+		.crop-stage img {
+			display: block;
+			width: 100%;
+			height: auto;
+			pointer-events: none;
+		}
+
+		.crop-box {
+			position: absolute;
+			border: 2px solid;
+			cursor: move;
+			touch-action: none;
+		}
+
+		.crop-box--left {
+			border-color: #ef4444;
+			background: rgba(239, 68, 68, 0.16);
+		}
+
+		.crop-box--right {
+			border-color: #38bdf8;
+			background: rgba(56, 189, 248, 0.16);
+		}
+
+		.crop-box--selected {
+			z-index: 5;
+			box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
+		}
+
+		.crop-box__label {
+			position: absolute;
+			top: 6px;
+			left: 6px;
+			font-size: 10px;
+			font-weight: 700;
+			padding: 2px 6px;
+			border-radius: 4px;
+			color: #fff;
+			pointer-events: none;
+			letter-spacing: 0.04em;
+		}
+
+		.crop-box--left .crop-box__label {
+			background: rgba(220, 38, 38, 0.92);
+		}
+
+		.crop-box--right .crop-box__label {
+			background: rgba(2, 132, 199, 0.92);
+		}
+
+		.crop-handle {
+			position: absolute;
+			width: 24px;
+			height: 24px;
+			margin-left: -12px;
+			margin-top: -12px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			touch-action: none;
+		}
+
+		.crop-handle::after {
+			content: "";
+			width: 10px;
+			height: 10px;
+			background: #ffffff;
+			border: 2px solid var(--text);
+			border-radius: 3px;
+		}
+
+		.crop-box--left .crop-handle::after {
+			border-color: #dc2626;
+		}
+
+		.crop-box--right .crop-handle::after {
+			border-color: #0284c7;
+		}
+
+		.crop-handle[data-dir="nw"] { left: 0%; top: 0%; cursor: nwse-resize; }
+		.crop-handle[data-dir="n"]  { left: 50%; top: 0%; cursor: ns-resize; }
+		.crop-handle[data-dir="ne"] { left: 100%; top: 0%; cursor: nesw-resize; }
+		.crop-handle[data-dir="e"]  { left: 100%; top: 50%; cursor: ew-resize; }
+		.crop-handle[data-dir="se"] { left: 100%; top: 100%; cursor: nwse-resize; }
+		.crop-handle[data-dir="s"]  { left: 50%; top: 100%; cursor: ns-resize; }
+		.crop-handle[data-dir="sw"] { left: 0%; top: 100%; cursor: nesw-resize; }
+		.crop-handle[data-dir="w"]  { left: 0%; top: 50%; cursor: ew-resize; }
+
+		.fine-tune {
+			margin-top: 12px;
+			background: var(--surface-subtle);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-md);
+			padding: 12px;
+		}
+
+		.fine-tune__tabs {
+			display: flex;
+			gap: 6px;
+			margin-bottom: 10px;
+		}
+
+		.fine-tune__grid {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 8px;
+		}
+
+		@media (max-width: 480px) {
+			.fine-tune__grid {
+				grid-template-columns: repeat(2, 1fr);
+			}
+		}
+
+		.num-field {
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+		}
+
+		.num-field label {
+			font-size: 11px;
+			color: var(--text-secondary);
+			font-weight: 600;
+		}
+
+		.num-field input[type="number"] {
+			padding: 6px 8px;
+			min-height: 34px;
+			font-variant-numeric: tabular-nums;
+		}
+
+		.editor-actions {
+			display: flex;
+			justify-content: flex-end;
+			gap: 8px;
+			margin-top: 12px;
+		}
+
+		.snapshot-frame {
+			background: #0f172a;
+			border: 1px solid var(--border);
+			border-radius: var(--radius-md);
+			overflow: hidden;
+		}
+
+		.snapshot-frame img {
+			display: block;
+			width: 100%;
+			height: auto;
+		}
+
+		.live-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 12px;
+		}
+
+		@media (max-width: 460px) {
+			.live-grid {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		.live-pane {
+			background: #0f172a;
+			border: 1px solid var(--border-strong);
+			border-radius: var(--radius-md);
+			overflow: hidden;
+		}
+
+		.live-pane__head {
+			font-size: 11px;
+			font-weight: 700;
+			padding: 7px 10px;
+			color: var(--text-secondary);
+			background: var(--surface-subtle);
+			border-bottom: 1px solid var(--border);
+			text-transform: uppercase;
+			letter-spacing: 0.04em;
+		}
+
+		.live-pane img {
+			display: block;
+			width: 100%;
+			aspect-ratio: 3 / 4;
+			object-fit: contain;
+			background: #090d16;
+		}
+
+		/* Roster Disclosure */
+		details.panel {
+			padding: 0;
+			overflow: hidden;
+		}
+
+		details.panel > summary {
+			list-style: none;
+			cursor: pointer;
+			padding: 18px 24px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			user-select: none;
+		}
+
+		details.panel > summary::-webkit-details-marker {
+			display: none;
+		}
+
+		.roster-body {
+			padding: 0 24px 22px;
+			border-top: 1px solid var(--border);
+		}
+
+		.roster-toolbar {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 10px;
+			margin: 14px 0 10px;
+		}
+
+		.roster-actions {
+			margin-top: 12px;
+			display: flex;
+			justify-content: flex-end;
+		}
+
+		.hidden {
+			display: none !important;
+		}
+
+		.notice {
+			position: fixed;
+			right: 20px;
+			bottom: 20px;
+			background: var(--text);
+			color: #ffffff;
+			border-radius: var(--radius-sm);
+			padding: 10px 16px;
+			font-size: 13px;
+			font-weight: 600;
+			box-shadow: var(--shadow-lg);
+			opacity: 0;
+			transform: translateY(8px);
+			pointer-events: none;
+			transition: opacity 0.15s ease, transform 0.15s ease;
+			z-index: 50;
+		}
+
+		.notice--visible {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		/* Login Screen */
+		.login-screen {
+			position: fixed;
+			inset: 0;
+			z-index: 100;
+			background: var(--bg);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 20px;
+		}
+
+		.login-card {
+			width: 100%;
+			max-width: 360px;
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			box-shadow: var(--shadow-lg);
+			padding: 32px 28px;
+			display: flex;
+			flex-direction: column;
+			gap: 20px;
+		}
+
+		.login-header {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			text-align: center;
+			gap: 12px;
+		}
+
+		.login-badge {
+			width: 44px;
+			height: 44px;
+			font-size: 16px;
+			border-radius: 12px;
+		}
+
+		.login-title {
+			font-size: 20px;
+			font-weight: 700;
+			letter-spacing: -0.02em;
+			color: var(--text);
+		}
+
+		.login-form {
+			display: flex;
+			flex-direction: column;
+			gap: 14px;
+		}
+
+		.password-wrapper {
+			position: relative;
+			display: flex;
+			align-items: center;
+		}
+
+		.login-input {
+			width: 100%;
+			padding: 11px 42px 11px 14px;
+			font-size: 14px;
+			border: 1px solid var(--border-strong);
+			border-radius: var(--radius-md);
+			background: var(--surface);
+			color: var(--text);
+			transition: border-color 0.15s ease, box-shadow 0.15s ease;
+		}
+
+		.login-input:focus {
+			outline: none;
+			border-color: var(--primary);
+			box-shadow: 0 0 0 3px var(--primary-ring);
+		}
+
+		.login-input.error {
+			border-color: var(--red);
+			box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+		}
+
+		.toggle-password-btn {
+			position: absolute;
+			right: 8px;
+			background: none;
+			border: none;
+			color: var(--text-muted);
+			cursor: pointer;
+			padding: 6px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 6px;
+			transition: color 0.15s ease;
+		}
+
+		.toggle-password-btn:hover {
+			color: var(--text);
+		}
+
+		.login-error {
+			font-size: 13px;
+			color: var(--red);
+			background: var(--red-soft);
+			border: 1px solid var(--red-border);
+			border-radius: var(--radius-sm);
+			padding: 8px 12px;
+			text-align: center;
+			font-weight: 500;
+		}
+
+		.login-btn {
+			width: 100%;
+			padding: 11px;
+			font-size: 14px;
+			font-weight: 600;
+			justify-content: center;
+			cursor: pointer;
+		}
+
+		.btn-logout {
+			background: transparent;
+			border: 1px solid var(--border);
+			color: var(--text-secondary);
+			font-size: 12px;
+			font-weight: 600;
+			padding: 5px 12px;
+			border-radius: 999px;
+			cursor: pointer;
+			transition: all 0.15s ease;
+		}
+
+		.btn-logout:hover {
+			background: var(--red-soft);
+			border-color: var(--red-border);
+			color: var(--red);
+		}
+
+		@keyframes loginShake {
+			0%, 100% { transform: translateX(0); }
+			20%, 60% { transform: translateX(-6px); }
+			40%, 80% { transform: translateX(6px); }
+		}
+
+		.shake {
+			animation: loginShake 0.35s ease-in-out;
+		}
+	</style>
+</head>
+<body>
+	<!-- Login Screen -->
+	<div id="loginScreen" class="login-screen">
+		<div class="login-card" id="loginCard">
+			<div class="login-header">
+				<div class="brand__badge login-badge">FLL</div>
+				<h1 class="login-title">Control Panel</h1>
+			</div>
+
+			<form id="loginForm" class="login-form">
+				<div class="login-field">
+					<div class="password-wrapper">
+						<input
+							type="password"
+							id="loginPassword"
+							class="login-input"
+							placeholder="Password"
+							autocomplete="current-password"
+							required
+						/>
+						<button type="button" id="togglePasswordBtn" class="toggle-password-btn" title="Toggle password visibility" tabindex="-1">
+							<svg id="eyeIcon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+								<circle cx="12" cy="12" r="3"></circle>
+							</svg>
+						</button>
+					</div>
+				</div>
+
+				<div id="loginError" class="login-error hidden" role="alert">Incorrect password</div>
+
+				<button type="submit" id="loginBtn" class="btn-primary login-btn">Log In</button>
+			</form>
+		</div>
+	</div>
+
+	<!-- App Shell (authenticated) -->
+	<div id="appShell" class="hidden">
+		<header class="navbar" role="banner">
+			<div class="navbar__inner">
+				<a href="#match-hero" class="brand">
+					<span class="brand__badge">FLL</span>
+					<span>Match Control</span>
+				</a>
+
+				<nav class="nav-links" aria-label="Primary Navigation">
+					<a href="#match-hero" class="nav-link">Match Timer</a>
+					<a href="#teams-section" class="nav-link">Teams</a>
+					<a href="#vision-section" class="nav-link">Vision &amp; Tables</a>
+					<a href="#roster-section" class="nav-link">Roster</a>
+				</nav>
+
+				<div class="status-group">
+					<div id="connStatus" class="status" aria-live="polite">
+						<span class="status__dot"></span>
+						<span id="connLabel">Connecting</span>
+					</div>
+					<button id="logoutBtn" type="button" class="btn-logout" title="Lock Control Panel">Lock</button>
+				</div>
+			</div>
+		</header>
+
+		<main class="container" role="main">
+			<!-- Hero Section with Matchup & Primary Controls -->
+			<section id="match-hero" class="hero" aria-labelledby="hero-heading">
+				<div class="hero__content">
+					<h1 id="hero-heading" class="hero__title">FLL Match Control</h1>
+
+					<div class="active-match">
+						<div class="active-side active-side--red">
+							<div class="active-side__tag">Red Table (Left)</div>
+							<div id="liveRedName" class="active-side__name">Red Team</div>
+						</div>
+						<div class="active-side active-side--blue">
+							<div class="active-side__tag">Blue Table (Right)</div>
+							<div id="liveBlueName" class="active-side__name">Blue Team</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="hero__timer-card">
+					<div class="timer-readout">
+						<div id="timerDigits" class="timer-digits">2:30</div>
+						<div id="timerStage" class="timer-stage">Ready</div>
+					</div>
+
+					<div class="timer-controls">
+						<button id="startBtn" type="button" class="btn-cta">Start Match</button>
+						<button id="resetBtn" type="button">Reset</button>
+					</div>
+
+					<label class="checkbox-row" for="preCountToggle">
+						<input id="preCountToggle" type="checkbox" checked />
+						<span>10-second pre-countdown</span>
+					</label>
+				</div>
+			</section>
+
+			<!-- Section 2: Team Assignment -->
+			<section id="teams-section" class="panel" aria-labelledby="teams-heading">
+				<div class="panel__header">
+					<h2 id="teams-heading" class="panel__title">Team Assignment</h2>
+				</div>
+
+				<div class="team-grid">
+					<div class="field">
+						<label class="field__label field__label--red" for="redSelect">Red Team (Left Table)</label>
+						<select id="redSelect"></select>
+						<input id="redCustomInput" type="text" class="hidden" placeholder="Enter Red Team name" />
+					</div>
+
+					<div class="field">
+						<label class="field__label field__label--blue" for="blueSelect">Blue Team (Right Table)</label>
+						<select id="blueSelect"></select>
+						<input id="blueCustomInput" type="text" class="hidden" placeholder="Enter Blue Team name" />
+					</div>
+				</div>
+
+				<div class="team-actions">
+					<button id="swapBtn" type="button">Swap Sides</button>
+					<button id="applyTeamsBtn" type="button" class="btn-primary">Apply Teams</button>
+				</div>
+				<div id="unsavedNote" class="unsaved-note hidden">Pending team changes — click Apply Teams to push to Video Wall.</div>
+			</section>
+
+			<!-- Section 3: Vision & Table Calibration -->
+			<section id="vision-section" class="panel" aria-labelledby="vision-heading">
+				<div class="panel__header">
+					<h2 id="vision-heading" class="panel__title">Vision &amp; Table Calibration</h2>
+					<span id="calibBadge" class="panel__meta">Default 50/50</span>
+				</div>
+
+				<div class="calib-info">
+					<div id="calibCoords" class="calib-coords">Left: 0%–50% x, 0%–100% y | Right: 50%–100% x, 0%–100% y</div>
+				</div>
+
+				<div class="calib-buttons">
+					<button id="calibrateBtn" type="button" class="btn-primary">Auto-Detect Tables</button>
+					<button id="editCropBtn" type="button">Edit Manually</button>
+					<button id="toggleLiveBtn" type="button">Live Streams</button>
+					<button id="toggleSnapshotBtn" type="button">Check Crop</button>
+					<button id="resetCalibBtn" type="button">Reset 50/50</button>
+				</div>
+
+				<!-- Interactive Manual Crop Editor -->
+				<div id="editorBox" class="media-box hidden">
+					<div class="editor-help">
+						<span>Drag boxes or handles to align each table mat border.</span>
+						<button id="refreshRawBtn" type="button" class="btn-sm">Refresh Frame</button>
+					</div>
+
+					<div id="cropStage" class="crop-stage">
+						<img id="rawFrameImg" alt="Raw Camera Frame" />
+
+						<div id="cropBoxLeft" class="crop-box crop-box--left crop-box--selected" data-side="left">
+							<span class="crop-box__label">RED</span>
+							<div class="crop-handle" data-dir="nw"></div>
+							<div class="crop-handle" data-dir="n"></div>
+							<div class="crop-handle" data-dir="ne"></div>
+							<div class="crop-handle" data-dir="e"></div>
+							<div class="crop-handle" data-dir="se"></div>
+							<div class="crop-handle" data-dir="s"></div>
+							<div class="crop-handle" data-dir="sw"></div>
+							<div class="crop-handle" data-dir="w"></div>
+						</div>
+
+						<div id="cropBoxRight" class="crop-box crop-box--right" data-side="right">
+							<span class="crop-box__label">BLUE</span>
+							<div class="crop-handle" data-dir="nw"></div>
+							<div class="crop-handle" data-dir="n"></div>
+							<div class="crop-handle" data-dir="ne"></div>
+							<div class="crop-handle" data-dir="e"></div>
+							<div class="crop-handle" data-dir="se"></div>
+							<div class="crop-handle" data-dir="s"></div>
+							<div class="crop-handle" data-dir="sw"></div>
+							<div class="crop-handle" data-dir="w"></div>
+						</div>
+					</div>
+
+					<div class="fine-tune">
+						<div class="fine-tune__tabs">
+							<button id="tabLeftBtn" type="button" class="btn-sm btn-active">Red Table (%)</button>
+							<button id="tabRightBtn" type="button" class="btn-sm">Blue Table (%)</button>
+						</div>
+						<div class="fine-tune__grid">
+							<div class="num-field">
+								<label for="numX1">Left %</label>
+								<input id="numX1" type="number" min="0" max="96" step="0.5" />
+							</div>
+							<div class="num-field">
+								<label for="numY1">Top %</label>
+								<input id="numY1" type="number" min="0" max="96" step="0.5" />
+							</div>
+							<div class="num-field">
+								<label for="numX2">Right %</label>
+								<input id="numX2" type="number" min="4" max="100" step="0.5" />
+							</div>
+							<div class="num-field">
+								<label for="numY2">Bottom %</label>
+								<input id="numY2" type="number" min="4" max="100" step="0.5" />
+							</div>
+						</div>
+					</div>
+
+					<div class="editor-actions">
+						<button id="cancelEditBtn" type="button">Cancel</button>
+						<button id="saveEditBtn" type="button" class="btn-primary">Save Table Regions</button>
+					</div>
+				</div>
+
+				<!-- Static Crop Preview -->
+				<div id="snapshotBox" class="media-box hidden">
+					<div class="snapshot-frame">
+						<img id="snapshotImg" alt="Detected Red and Blue Table Regions" />
+					</div>
+				</div>
+
+				<!-- Control Panel Live Streams (with Robot Tracking Rectangle) -->
+				<div id="liveBox" class="media-box hidden">
+					<div class="editor-help">
+						<button id="resetZoomBtn" type="button" class="btn-sm">Reset Zoom</button>
+					</div>
+					<div class="live-grid">
+						<div class="live-pane">
+							<div class="live-pane__head">Red Table (Tracker View)</div>
+							<img id="redStreamImg" alt="Red Table Control Stream" />
+						</div>
+						<div class="live-pane">
+							<div class="live-pane__head">Blue Table (Tracker View)</div>
+							<img id="blueStreamImg" alt="Blue Table Control Stream" />
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Section 4: Team Roster -->
+			<details id="rosterDetails" class="panel">
+				<summary id="roster-section">
+					<span class="panel__title">Team Roster</span>
+					<span id="rosterCount" class="panel__meta">0 teams</span>
+				</summary>
+				<div class="roster-body">
+					<div class="roster-toolbar">
+						<button id="uploadTxtBtn" type="button" class="btn-sm">Upload .txt File</button>
+						<input id="txtFileInput" type="file" accept=".txt,text/plain" class="hidden" />
+					</div>
+					<textarea id="rosterTextarea" rows="7" placeholder="RoboKnights&#10;CyberHawks&#10;TechnoTitans"></textarea>
+					<div class="roster-actions">
+						<button id="saveRosterBtn" type="button" class="btn-primary">Save Team List</button>
+					</div>
+				</div>
+			</details>
+		</main>
+	</div>
+
+	<div id="notice" class="notice" role="status" aria-live="polite"></div>
+
+	<script>
+		(function () {
+			const AUTH_STORAGE_KEY = "fll_control_auth";
+			const AUTH_HASH = "9aa1afe250d02011c09dfe014ed03307d0b5e65b43648ae72f921ccd7163084c";
+
+			function sha256Pure(str) {
+				function rightRotate(value, amount) {
+					return (value >>> amount) | (value << (32 - amount));
+				}
+				var mathPow = Math.pow;
+				var maxWord = mathPow(2, 32);
+				var i, j;
+				var result = "";
+				var words = [];
+				var ascii = unescape(encodeURIComponent(str));
+				var asciiBitLength = ascii.length * 8;
+				var hash = [];
+				var k = [];
+				var primeCounter = 0;
+
+				var isComposite = {};
+				for (var candidate = 2; primeCounter < 64; candidate++) {
+					if (!isComposite[candidate]) {
+						for (i = 0; i < 313; i += candidate) {
+							isComposite[i] = candidate;
+						}
+						hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;
+						k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+					}
+				}
+
+				ascii += "\x80";
+				while ((ascii.length % 64) !== 56) ascii += "\x00";
+				for (i = 0; i < ascii.length; i++) {
+					j = ascii.charCodeAt(i);
+					words[i >> 2] |= j << ((3 - i) % 4) * 8;
+				}
+				words[words.length] = ((asciiBitLength / maxWord) | 0);
+				words[words.length] = (asciiBitLength);
+
+				for (j = 0; j < words.length;) {
+					var w = words.slice(j, j += 16);
+					var oldHash = hash;
+					hash = hash.slice(0, 8);
+
+					for (i = 0; i < 64; i++) {
+						var w15 = w[i - 15], w2 = w[i - 2];
+						var a = hash[0], e = hash[4];
+						var temp1 = hash[7]
+							+ (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+							+ ((e & hash[5]) ^ ((~e) & hash[6]))
+							+ k[i]
+							+ (w[i] = (i < 16) ? w[i] : (
+								w[i - 16]
+								+ (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+								+ w[i - 7]
+								+ (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+							) | 0);
+						var temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+							+ ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+
+						hash = [(temp1 + temp2) | 0].concat(hash);
+						hash[4] = (hash[4] + temp1) | 0;
+					}
+					for (i = 0; i < 8; i++) {
+						hash[i] = (hash[i] + oldHash[i]) | 0;
+					}
+				}
+				for (i = 0; i < 8; i++) {
+					for (j = 3; j >= 0; j--) {
+						var b = (hash[i] >> (j * 8)) & 255;
+						result += ((b < 16) ? "0" : "") + b.toString(16);
+					}
+				}
+				return result;
+			}
+
+			async function hashPassword(str) {
+				if (window.crypto && window.crypto.subtle && window.crypto.subtle.digest) {
+					try {
+						const buf = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+						return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+					} catch (_) {}
+				}
+				return sha256Pure(str);
+			}
+
+			const loginScreen = document.getElementById("loginScreen");
+			const loginCard = document.getElementById("loginCard");
+			const loginForm = document.getElementById("loginForm");
+			const loginPassword = document.getElementById("loginPassword");
+			const togglePasswordBtn = document.getElementById("togglePasswordBtn");
+			const eyeIcon = document.getElementById("eyeIcon");
+			const loginError = document.getElementById("loginError");
+			const appShell = document.getElementById("appShell");
+			const logoutBtn = document.getElementById("logoutBtn");
+
+			const CUSTOM_VALUE = "__custom__";
+			const MIN_W = 0.08;
+			const MIN_H = 0.12;
+
+			const connStatus = document.getElementById("connStatus");
+			const connLabel = document.getElementById("connLabel");
+			const liveRedName = document.getElementById("liveRedName");
+			const liveBlueName = document.getElementById("liveBlueName");
+			const timerDigits = document.getElementById("timerDigits");
+			const timerStage = document.getElementById("timerStage");
+			const startBtn = document.getElementById("startBtn");
+			const resetBtn = document.getElementById("resetBtn");
+			const preCountToggle = document.getElementById("preCountToggle");
+
+			const redSelect = document.getElementById("redSelect");
+			const redCustomInput = document.getElementById("redCustomInput");
+			const blueSelect = document.getElementById("blueSelect");
+			const blueCustomInput = document.getElementById("blueCustomInput");
+			const swapBtn = document.getElementById("swapBtn");
+			const applyTeamsBtn = document.getElementById("applyTeamsBtn");
+			const unsavedNote = document.getElementById("unsavedNote");
+
+			const calibBadge = document.getElementById("calibBadge");
+			const calibCoords = document.getElementById("calibCoords");
+			const calibrateBtn = document.getElementById("calibrateBtn");
+			const editCropBtn = document.getElementById("editCropBtn");
+			const resetCalibBtn = document.getElementById("resetCalibBtn");
+			const toggleSnapshotBtn = document.getElementById("toggleSnapshotBtn");
+			const toggleLiveBtn = document.getElementById("toggleLiveBtn");
+
+			const editorBox = document.getElementById("editorBox");
+			const refreshRawBtn = document.getElementById("refreshRawBtn");
+			const cropStage = document.getElementById("cropStage");
+			const rawFrameImg = document.getElementById("rawFrameImg");
+			const cropBoxLeft = document.getElementById("cropBoxLeft");
+			const cropBoxRight = document.getElementById("cropBoxRight");
+			const tabLeftBtn = document.getElementById("tabLeftBtn");
+			const tabRightBtn = document.getElementById("tabRightBtn");
+			const numX1 = document.getElementById("numX1");
+			const numY1 = document.getElementById("numY1");
+			const numX2 = document.getElementById("numX2");
+			const numY2 = document.getElementById("numY2");
+			const cancelEditBtn = document.getElementById("cancelEditBtn");
+			const saveEditBtn = document.getElementById("saveEditBtn");
+
+			const snapshotBox = document.getElementById("snapshotBox");
+			const snapshotImg = document.getElementById("snapshotImg");
+			const liveBox = document.getElementById("liveBox");
+			const resetZoomBtn = document.getElementById("resetZoomBtn");
+			const redStreamImg = document.getElementById("redStreamImg");
+			const blueStreamImg = document.getElementById("blueStreamImg");
+
+			const rosterDetails = document.getElementById("rosterDetails");
+			const rosterCount = document.getElementById("rosterCount");
+			const uploadTxtBtn = document.getElementById("uploadTxtBtn");
+			const txtFileInput = document.getElementById("txtFileInput");
+			const rosterTextarea = document.getElementById("rosterTextarea");
+			const saveRosterBtn = document.getElementById("saveRosterBtn");
+			const noticeEl = document.getElementById("notice");
+
+			if (window.innerWidth >= 860) {
+				rosterDetails.open = true;
+			}
+
+			let serverState = null;
+			let timerAnchorMs = performance.now();
+			let hasUnsavedTeams = false;
+			let isEditingRoster = false;
+			let resetConfirmUntilMs = 0;
+			let noticeTimer = null;
+			let ws = null;
+			let wsReconnectTimer = null;
+
+			let draftRois = {
+				left: { x1: 0.0, y1: 0.0, x2: 0.5, y2: 1.0 },
+				right: { x1: 0.5, y1: 0.0, x2: 1.0, y2: 1.0 },
+			};
+			let activeEditSide = "left";
+			let dragSession = null;
+
+			function notify(msg) {
+				noticeEl.textContent = msg;
+				noticeEl.classList.add("notice--visible");
+				if (noticeTimer) clearTimeout(noticeTimer);
+				noticeTimer = setTimeout(function () {
+					noticeEl.classList.remove("notice--visible");
+				}, 2200);
+			}
+
+			function setConnectionState(mode) {
+				connStatus.classList.remove("status--live", "status--offline");
+				if (mode === "live") {
+					connStatus.classList.add("status--live");
+					connLabel.textContent = "Live Sync";
+				} else if (mode === "offline") {
+					connStatus.classList.add("status--offline");
+					connLabel.textContent = "Offline";
+				} else {
+					connLabel.textContent = "Syncing";
+				}
+			}
+
+			function formatMMSS(sec) {
+				const clamped = Math.max(0, Math.floor(sec));
+				const m = Math.floor(clamped / 60);
+				const s = clamped % 60;
+				return m + ":" + String(s).padStart(2, "0");
+			}
+
+			function pct(val) {
+				return Math.round((Number(val) || 0) * 100) + "%";
+			}
+
+			function clamp(v, lo, hi) {
+				return Math.max(lo, Math.min(hi, v));
+			}
+
+			function cloneRois(rois) {
+				const src = rois || {};
+				const l = src.left || { x1: 0, y1: 0, x2: 0.5, y2: 1 };
+				const r = src.right || { x1: 0.5, y1: 0, x2: 1, y2: 1 };
+				return {
+					left: { x1: Number(l.x1) || 0, y1: Number(l.y1) || 0, x2: Number(l.x2) || 0.5, y2: Number(l.y2) || 1 },
+					right: { x1: Number(r.x1) || 0.5, y1: Number(r.y1) || 0, x2: Number(r.x2) || 1, y2: Number(r.y2) || 1 },
+				};
+			}
+
+			function getChosenTeam(selectEl, inputEl) {
+				return selectEl.value === CUSTOM_VALUE ? inputEl.value.trim() : selectEl.value.trim();
+			}
+
+			function setChosenTeam(selectEl, inputEl, name, list) {
+				if (list.includes(name)) {
+					selectEl.value = name;
+					inputEl.classList.add("hidden");
+					inputEl.value = "";
+				} else {
+					selectEl.value = CUSTOM_VALUE;
+					inputEl.classList.remove("hidden");
+					inputEl.value = name || "";
+				}
+			}
+
+			function buildOptions(selectEl, list) {
+				selectEl.innerHTML = "";
+				for (const item of list) {
+					const opt = document.createElement("option");
+					opt.value = item;
+					opt.textContent = item;
+					selectEl.appendChild(opt);
+				}
+				const custom = document.createElement("option");
+				custom.value = CUSTOM_VALUE;
+				custom.textContent = "Custom name...";
+				selectEl.appendChild(custom);
+			}
+
+			function checkUnsavedTeams() {
+				if (!serverState) return;
+				const r = getChosenTeam(redSelect, redCustomInput);
+				const b = getChosenTeam(blueSelect, blueCustomInput);
+				const changed =
+					(r && r !== serverState.teams.red) ||
+					(b && b !== serverState.teams.blue);
+				hasUnsavedTeams = Boolean(changed);
+				unsavedNote.classList.toggle("hidden", !hasUnsavedTeams);
+			}
+
+			function renderCalibrationInfo(calib) {
+				if (!calib || !calib.rois || !calib.rois.left || !calib.rois.right) return;
+				const l = calib.rois.left;
+				const r = calib.rois.right;
+				calibBadge.textContent = calib.calibrated ? "Calibrated" : "Default 50/50";
+				calibCoords.textContent =
+					"Left: " + pct(l.x1) + "–" + pct(l.x2) + " x, " + pct(l.y1) + "–" + pct(l.y2) + " y  |  " +
+					"Right: " + pct(r.x1) + "–" + pct(r.x2) + " x, " + pct(r.y1) + "–" + pct(r.y2) + " y";
+			}
+
+			function refreshSnapshotImage() {
+				snapshotImg.src = "/api/calibration-preview?t=" + Date.now();
+			}
+
+			function renderCropOverlay(syncInputs) {
+				const applyBoxStyle = function (el, b, isSel) {
+					el.style.left = (b.x1 * 100).toFixed(2) + "%";
+					el.style.top = (b.y1 * 100).toFixed(2) + "%";
+					el.style.width = ((b.x2 - b.x1) * 100).toFixed(2) + "%";
+					el.style.height = ((b.y2 - b.y1) * 100).toFixed(2) + "%";
+					el.classList.toggle("crop-box--selected", isSel);
+				};
+
+				applyBoxStyle(cropBoxLeft, draftRois.left, activeEditSide === "left");
+				applyBoxStyle(cropBoxRight, draftRois.right, activeEditSide === "right");
+
+				tabLeftBtn.classList.toggle("btn-active", activeEditSide === "left");
+				tabRightBtn.classList.toggle("btn-active", activeEditSide === "right");
+
+				if (syncInputs !== false) {
+					const cur = draftRois[activeEditSide];
+					numX1.value = (cur.x1 * 100).toFixed(1);
+					numY1.value = (cur.y1 * 100).toFixed(1);
+					numX2.value = (cur.x2 * 100).toFixed(1);
+					numY2.value = (cur.y2 * 100).toFixed(1);
+				}
+			}
+
+			function openManualEditor() {
+				const currentRois = serverState && serverState.calibration ? serverState.calibration.rois : null;
+				draftRois = cloneRois(currentRois);
+				editorBox.classList.remove("hidden");
+				editCropBtn.classList.add("btn-active");
+				rawFrameImg.src = "/api/raw-frame?t=" + Date.now();
+				renderCropOverlay(true);
+			}
+
+			function closeManualEditor() {
+				editorBox.classList.add("hidden");
+				editCropBtn.classList.remove("btn-active");
+				rawFrameImg.removeAttribute("src");
+				dragSession = null;
+			}
+
+			function setupBoxDragging(boxEl, side) {
+				boxEl.addEventListener("pointerdown", function (e) {
+					e.preventDefault();
+					e.stopPropagation();
+
+					activeEditSide = side;
+					const rect = cropStage.getBoundingClientRect();
+					if (rect.width <= 0 || rect.height <= 0) return;
+
+					const handleEl = e.target.closest(".crop-handle");
+					const mode = handleEl ? handleEl.getAttribute("data-dir") : "move";
+					const b = draftRois[side];
+
+					dragSession = {
+						pointerId: e.pointerId,
+						targetEl: boxEl,
+						side: side,
+						mode: mode,
+						stageRect: rect,
+						startClientX: e.clientX,
+						startClientY: e.clientY,
+						orig: { x1: b.x1, y1: b.y1, x2: b.x2, y2: b.y2 },
+					};
+
+					try {
+						boxEl.setPointerCapture(e.pointerId);
+					} catch (_) {}
+					renderCropOverlay(true);
+				});
+
+				boxEl.addEventListener("pointermove", function (e) {
+					if (!dragSession || dragSession.pointerId !== e.pointerId) return;
+					e.preventDefault();
+
+					const dx = (e.clientX - dragSession.startClientX) / dragSession.stageRect.width;
+					const dy = (e.clientY - dragSession.startClientY) / dragSession.stageRect.height;
+					const o = dragSession.orig;
+					const b = draftRois[dragSession.side];
+					const m = dragSession.mode;
+
+					if (m === "move") {
+						const w = o.x2 - o.x1;
+						const h = o.y2 - o.y1;
+						b.x1 = clamp(o.x1 + dx, 0, 1 - w);
+						b.y1 = clamp(o.y1 + dy, 0, 1 - h);
+						b.x2 = b.x1 + w;
+						b.y2 = b.y1 + h;
+					} else {
+						if (m.indexOf("w") !== -1) {
+							b.x1 = clamp(o.x1 + dx, 0, o.x2 - MIN_W);
+						}
+						if (m.indexOf("e") !== -1) {
+							b.x2 = clamp(o.x2 + dx, o.x1 + MIN_W, 1);
+						}
+						if (m.indexOf("n") !== -1) {
+							b.y1 = clamp(o.y1 + dy, 0, o.y2 - MIN_H);
+						}
+						if (m.indexOf("s") !== -1) {
+							b.y2 = clamp(o.y2 + dy, o.y1 + MIN_H, 1);
+						}
+					}
+					renderCropOverlay(true);
+				});
+
+				const endDrag = function (e) {
+					if (!dragSession || dragSession.pointerId !== e.pointerId) return;
+					try {
+						boxEl.releasePointerCapture(e.pointerId);
+					} catch (_) {}
+					dragSession = null;
+				};
+
+				boxEl.addEventListener("pointerup", endDrag);
+				boxEl.addEventListener("pointercancel", endDrag);
+			}
+
+			setupBoxDragging(cropBoxLeft, "left");
+			setupBoxDragging(cropBoxRight, "right");
+
+			function onNumericInputChange() {
+				const b = draftRois[activeEditSide];
+				let x1 = clamp((parseFloat(numX1.value) || 0) / 100, 0, 0.92);
+				let y1 = clamp((parseFloat(numY1.value) || 0) / 100, 0, 0.88);
+				let x2 = clamp((parseFloat(numX2.value) || 100) / 100, x1 + MIN_W, 1);
+				let y2 = clamp((parseFloat(numY2.value) || 100) / 100, y1 + MIN_H, 1);
+				b.x1 = x1;
+				b.y1 = y1;
+				b.x2 = x2;
+				b.y2 = y2;
+				renderCropOverlay(false);
+			}
+
+			numX1.addEventListener("input", onNumericInputChange);
+			numY1.addEventListener("input", onNumericInputChange);
+			numX2.addEventListener("input", onNumericInputChange);
+			numY2.addEventListener("input", onNumericInputChange);
+
+			tabLeftBtn.addEventListener("click", function () {
+				activeEditSide = "left";
+				renderCropOverlay(true);
+			});
+
+			tabRightBtn.addEventListener("click", function () {
+				activeEditSide = "right";
+				renderCropOverlay(true);
+			});
+
+			function applySnapshot(data) {
+				if (!data || !data.teams || !data.timer) return;
+
+				const prevListStr = serverState ? JSON.stringify(serverState.teamList) : "";
+				const nextListStr = JSON.stringify(data.teamList || []);
+				const listChanged = prevListStr !== nextListStr;
+
+				serverState = data;
+				timerAnchorMs = performance.now();
+
+				liveRedName.textContent = data.teams.red || "Red Team";
+				liveBlueName.textContent = data.teams.blue || "Blue Team";
+				preCountToggle.checked = Boolean(data.timer.preCountEnabled);
+
+				const list = Array.isArray(data.teamList) ? data.teamList : [];
+				rosterCount.textContent = list.length + (list.length === 1 ? " team" : " teams");
+
+				if (listChanged) {
+					const draftRed = hasUnsavedTeams ? getChosenTeam(redSelect, redCustomInput) : data.teams.red;
+					const draftBlue = hasUnsavedTeams ? getChosenTeam(blueSelect, blueCustomInput) : data.teams.blue;
+
+					buildOptions(redSelect, list);
+					buildOptions(blueSelect, list);
+
+					setChosenTeam(redSelect, redCustomInput, draftRed || data.teams.red, list);
+					setChosenTeam(blueSelect, blueCustomInput, draftBlue || data.teams.blue, list);
+
+					if (!isEditingRoster) {
+						rosterTextarea.value = list.join("\n");
+					}
+				} else if (!hasUnsavedTeams) {
+					setChosenTeam(redSelect, redCustomInput, data.teams.red, list);
+					setChosenTeam(blueSelect, blueCustomInput, data.teams.blue, list);
+				}
+
+				if (data.calibration) {
+					renderCalibrationInfo(data.calibration);
+				}
+
+				checkUnsavedTeams();
+				renderTimer();
+			}
+
+			function computeTimerView() {
+				if (!serverState || !serverState.timer) {
+					return { digits: "2:30", stage: "Ready", stageCls: "", alert: false, active: false, ended: false };
+				}
+
+				const t = serverState.timer;
+				const mainDur = Number(t.duration) || 150;
+				const preDur = t.preCountEnabled ? (Number(t.preCountDuration) || 10) : 0;
+
+				if (t.status !== "running") {
+					return { digits: formatMMSS(mainDur), stage: "Ready", stageCls: "", alert: false, active: false, ended: false };
+				}
+
+				const elapsed = Math.max(0, Number(t.elapsed) || 0) + (performance.now() - timerAnchorMs) / 1000;
+
+				if (t.preCountEnabled && elapsed < preDur) {
+					const rem = Math.max(1, Math.ceil(preDur - elapsed));
+					return {
+						digits: "0:" + String(rem).padStart(2, "0"),
+						stage: "Pre-Countdown",
+						stageCls: "timer-stage--alert",
+						alert: true,
+						active: true,
+						ended: false,
+					};
+				}
+
+				const mainElapsed = t.preCountEnabled ? elapsed - preDur : elapsed;
+				if (mainElapsed < mainDur) {
+					const rem = Math.max(1, Math.ceil(mainDur - mainElapsed));
+					const endgame = rem <= 10;
+					return {
+						digits: formatMMSS(rem),
+						stage: endgame ? "Endgame" : "Match in Progress",
+						stageCls: endgame ? "timer-stage--alert" : "timer-stage--active",
+						alert: endgame,
+						active: true,
+						ended: false,
+					};
+				}
+
+				return {
+					digits: "0:00",
+					stage: "Match Ended",
+					stageCls: "timer-stage--alert",
+					alert: true,
+					active: false,
+					ended: true,
+				};
+			}
+
+			function renderTimer() {
+				const v = computeTimerView();
+				timerDigits.textContent = v.digits;
+				timerDigits.classList.toggle("timer-digits--alert", v.alert);
+
+				timerStage.textContent = v.stage;
+				timerStage.className = "timer-stage" + (v.stageCls ? " " + v.stageCls : "");
+
+				startBtn.disabled = v.active;
+				startBtn.textContent = v.active ? "Running..." : "Start Match";
+
+				const now = performance.now();
+				if (resetConfirmUntilMs > 0 && now >= resetConfirmUntilMs) {
+					resetConfirmUntilMs = 0;
+					resetBtn.textContent = "Reset";
+					resetBtn.classList.remove("btn-danger-confirm");
+				}
+			}
+
+			async function apiPost(path, payload) {
+				if (!isAuthenticated) throw new Error("Not authenticated");
+				const opts = { method: "POST", headers: {} };
+				if (payload !== undefined) {
+					opts.headers["Content-Type"] = "application/json";
+					opts.body = JSON.stringify(payload);
+				}
+				const res = await fetch(path, opts);
+				if (!res.ok) {
+					let detail = "Request failed";
+					try {
+						const err = await res.json();
+						if (err && err.detail) detail = err.detail;
+					} catch (_) {}
+					throw new Error(detail);
+				}
+				const snap = await res.json();
+				if (snap && snap.teams) {
+					applySnapshot(snap);
+				}
+				return snap;
+			}
+
+			async function pollState() {
+				if (!isAuthenticated) return;
+				try {
+					const res = await fetch("/api/state", { cache: "no-store" });
+					if (res.ok) {
+						const snap = await res.json();
+						applySnapshot(snap);
+						if (!ws || ws.readyState !== WebSocket.OPEN) {
+							setConnectionState("live");
+						}
+					}
+				} catch (_) {
+					if (!ws || ws.readyState !== WebSocket.OPEN) {
+						setConnectionState("offline");
+					}
+				}
+			}
+
+			function connectWS() {
+				if (!isAuthenticated) return;
+				if (wsReconnectTimer) {
+					clearTimeout(wsReconnectTimer);
+					wsReconnectTimer = null;
+				}
+				const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+				try {
+					ws = new WebSocket(proto + "//" + window.location.host + "/ws");
+				} catch (_) {
+					if (isAuthenticated) wsReconnectTimer = setTimeout(connectWS, 2000);
+					return;
+				}
+
+				ws.onopen = function () {
+					setConnectionState("live");
+				};
+
+				ws.onmessage = function (ev) {
+					try {
+						applySnapshot(JSON.parse(ev.data));
+					} catch (_) {}
+				};
+
+				ws.onclose = function () {
+					setConnectionState("offline");
+					if (isAuthenticated) wsReconnectTimer = setTimeout(connectWS, 1500);
+				};
+
+				ws.onerror = function () {
+					try { ws.close(); } catch (_) {}
+				};
+			}
+
+			startBtn.addEventListener("click", async function () {
+				try {
+					await apiPost("/api/timer/start", { preCountEnabled: preCountToggle.checked });
+					notify("Match timer started");
+				} catch (err) {
+					notify(err.message);
+				}
+			});
+
+			resetBtn.addEventListener("click", async function () {
+				const v = computeTimerView();
+				const now = performance.now();
+				if (v.active && now > resetConfirmUntilMs) {
+					resetConfirmUntilMs = now + 2600;
+					resetBtn.textContent = "Confirm Reset";
+					resetBtn.classList.add("btn-danger-confirm");
+					return;
+				}
+				resetConfirmUntilMs = 0;
+				resetBtn.textContent = "Reset";
+				resetBtn.classList.remove("btn-danger-confirm");
+				try {
+					await apiPost("/api/timer/reset");
+					notify("Timer and camera zoom reset");
+				} catch (err) {
+					notify(err.message);
+				}
+			});
+
+			preCountToggle.addEventListener("change", async function () {
+				try {
+					await apiPost("/api/timer/settings", { preCountEnabled: preCountToggle.checked });
+				} catch (err) {
+					notify(err.message);
+				}
+			});
+
+			redSelect.addEventListener("change", function () {
+				redCustomInput.classList.toggle("hidden", redSelect.value !== CUSTOM_VALUE);
+				if (redSelect.value === CUSTOM_VALUE) redCustomInput.focus();
+				checkUnsavedTeams();
+			});
+
+			blueSelect.addEventListener("change", function () {
+				blueCustomInput.classList.toggle("hidden", blueSelect.value !== CUSTOM_VALUE);
+				if (blueSelect.value === CUSTOM_VALUE) blueCustomInput.focus();
+				checkUnsavedTeams();
+			});
+
+			redCustomInput.addEventListener("input", checkUnsavedTeams);
+			blueCustomInput.addEventListener("input", checkUnsavedTeams);
+
+			applyTeamsBtn.addEventListener("click", async function () {
+				const r = getChosenTeam(redSelect, redCustomInput) || "Red Team";
+				const b = getChosenTeam(blueSelect, blueCustomInput) || "Blue Team";
+				try {
+					hasUnsavedTeams = false;
+					unsavedNote.classList.add("hidden");
+					await apiPost("/api/teams", { red: r, blue: b });
+					notify("Teams updated on Video Wall");
+				} catch (err) {
+					notify(err.message);
+				}
+			});
+
+			swapBtn.addEventListener("click", async function () {
+				try {
+					hasUnsavedTeams = false;
+					unsavedNote.classList.add("hidden");
+					await apiPost("/api/teams/swap");
+					notify("Swapped Red and Blue teams");
+				} catch (err) {
+					notify(err.message);
+				}
+			});
+
+			calibrateBtn.addEventListener("click", async function () {
+				calibrateBtn.disabled = true;
+				try {
+					const snap = await apiPost("/api/calibrate-tables");
+					if (!editorBox.classList.contains("hidden") && snap.calibration) {
+						draftRois = cloneRois(snap.calibration.rois);
+						renderCropOverlay(true);
+					}
+					if (!snapshotBox.classList.contains("hidden")) {
+						refreshSnapshotImage();
+					}
+					notify("Tables auto-detected and locked");
+				} catch (err) {
+					notify(err.message);
+				} finally {
+					calibrateBtn.disabled = false;
+				}
+			});
+
+			editCropBtn.addEventListener("click", function () {
+				if (editorBox.classList.contains("hidden")) {
+					openManualEditor();
+				} else {
+					closeManualEditor();
+				}
+			});
+
+			refreshRawBtn.addEventListener("click", function () {
+				rawFrameImg.src = "/api/raw-frame?t=" + Date.now();
+			});
+
+			cancelEditBtn.addEventListener("click", function () {
+				closeManualEditor();
+			});
+
+			saveEditBtn.addEventListener("click", async function () {
+				saveEditBtn.disabled = true;
+				try {
+					await apiPost("/api/calibrate-tables/manual", draftRois);
+					closeManualEditor();
+					if (!snapshotBox.classList.contains("hidden")) {
+						refreshSnapshotImage();
+					}
+					notify("Manual table regions saved");
+				} catch (err) {
+					notify(err.message);
+				} finally {
+					saveEditBtn.disabled = false;
+				}
+			});
+
+			resetCalibBtn.addEventListener("click", async function () {
+				try {
+					const snap = await apiPost("/api/calibrate-tables/reset");
+					if (!editorBox.classList.contains("hidden") && snap.calibration) {
+						draftRois = cloneRois(snap.calibration.rois);
+						renderCropOverlay(true);
+					}
+					if (!snapshotBox.classList.contains("hidden")) {
+						refreshSnapshotImage();
+					}
+					notify("Reset to 50/50 split");
+				} catch (err) {
+					notify(err.message);
+				}
+			});
+
+			toggleSnapshotBtn.addEventListener("click", function () {
+				const willShow = snapshotBox.classList.contains("hidden");
+				snapshotBox.classList.toggle("hidden", !willShow);
+				toggleSnapshotBtn.textContent = willShow ? "Hide Crop" : "Check Crop";
+				if (willShow) {
+					refreshSnapshotImage();
+				} else {
+					snapshotImg.removeAttribute("src");
+				}
+			});
+
+			toggleLiveBtn.addEventListener("click", function () {
+				const willShow = liveBox.classList.contains("hidden");
+				liveBox.classList.toggle("hidden", !willShow);
+				toggleLiveBtn.textContent = willShow ? "Hide Streams" : "Live Streams";
+				if (willShow) {
+					const ts = Date.now();
+					redStreamImg.src = "/video-stream/red-team/control?t=" + ts;
+					blueStreamImg.src = "/video-stream/blue-team/control?t=" + ts;
+				} else {
+					redStreamImg.removeAttribute("src");
+					blueStreamImg.removeAttribute("src");
+				}
+			});
+
+			resetZoomBtn.addEventListener("click", async function () {
+				try {
+					await apiPost("/api/tracking/reset");
+					notify("Camera zoom reset to full table");
+				} catch (err) {
+					notify(err.message);
+				}
+			});
+
+			uploadTxtBtn.addEventListener("click", function () {
+				txtFileInput.click();
+			});
+
+			txtFileInput.addEventListener("change", async function (e) {
+				const file = e.target.files && e.target.files[0];
+				if (!file) return;
+				try {
+					const text = await file.text();
+					isEditingRoster = false;
+					const snap = await apiPost("/api/team-list", { text: text });
+					rosterTextarea.value = (snap.teamList || []).join("\n");
+					notify("Loaded " + snap.teamList.length + " teams");
+				} catch (err) {
+					notify(err.message);
+				} finally {
+					txtFileInput.value = "";
+				}
+			});
+
+			rosterTextarea.addEventListener("focus", function () {
+				isEditingRoster = true;
+			});
+
+			rosterTextarea.addEventListener("blur", function () {
+				isEditingRoster = false;
+			});
+
+			saveRosterBtn.addEventListener("click", async function () {
+				try {
+					isEditingRoster = false;
+					const snap = await apiPost("/api/team-list", { text: rosterTextarea.value || "" });
+					rosterTextarea.value = (snap.teamList || []).join("\n");
+					notify("Saved " + snap.teamList.length + " teams");
+				} catch (err) {
+					notify(err.message);
+				}
+			});
+
+			let isAuthenticated = false;
+			let timerInterval = null;
+			let pollInterval = null;
+
+			function unlockUI() {
+				isAuthenticated = true;
+				loginScreen.classList.add("hidden");
+				appShell.classList.remove("hidden");
+				pollState();
+				connectWS();
+				if (!timerInterval) timerInterval = setInterval(renderTimer, 100);
+				if (!pollInterval) pollInterval = setInterval(pollState, 2500);
+			}
+
+			function lockUI() {
+				isAuthenticated = false;
+				localStorage.removeItem(AUTH_STORAGE_KEY);
+				if (ws) {
+					try { ws.close(); } catch (_) {}
+					ws = null;
+				}
+				if (wsReconnectTimer) {
+					clearTimeout(wsReconnectTimer);
+					wsReconnectTimer = null;
+				}
+				if (timerInterval) {
+					clearInterval(timerInterval);
+					timerInterval = null;
+				}
+				if (pollInterval) {
+					clearInterval(pollInterval);
+					pollInterval = null;
+				}
+				appShell.classList.add("hidden");
+				loginScreen.classList.remove("hidden");
+				loginPassword.value = "";
+				loginError.classList.add("hidden");
+				loginPassword.classList.remove("error");
+				setTimeout(function () {
+					loginPassword.focus();
+				}, 60);
+			}
+
+			togglePasswordBtn.addEventListener("click", function () {
+				const isPassword = loginPassword.type === "password";
+				loginPassword.type = isPassword ? "text" : "password";
+				togglePasswordBtn.title = isPassword ? "Hide password" : "Show password";
+				eyeIcon.innerHTML = isPassword
+					? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
+					: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+			});
+
+			loginForm.addEventListener("submit", async function (e) {
+				e.preventDefault();
+				const pwd = loginPassword.value;
+				if (!pwd) return;
+
+				const hash = await hashPassword(pwd);
+				if (hash === AUTH_HASH) {
+					loginError.classList.add("hidden");
+					loginPassword.classList.remove("error");
+					localStorage.setItem(AUTH_STORAGE_KEY, AUTH_HASH);
+					unlockUI();
+				} else {
+					loginError.classList.remove("hidden");
+					loginPassword.classList.add("error");
+					loginCard.classList.remove("shake");
+					void loginCard.offsetWidth;
+					loginCard.classList.add("shake");
+					loginPassword.select();
+				}
+			});
+
+			logoutBtn.addEventListener("click", function () {
+				lockUI();
+			});
+
+			document.addEventListener("visibilitychange", function () {
+				if (!document.hidden && isAuthenticated) {
+					pollState();
+					connectWS();
+				}
+			});
+
+			const savedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
+			if (savedAuth === AUTH_HASH) {
+				unlockUI();
+			} else {
+				lockUI();
+			}
+		})();
+	</script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+@font-face {
+	font-family: "Inter";
+	src: url("assets/fonts/Inter/Inter-VariableFont_opsz,wght.ttf") format("truetype");
+	font-weight: 100 900;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "Inter";
+	src: url("assets/fonts/Inter/Inter-Italic-VariableFont_opsz,wght.ttf") format("truetype");
+	font-weight: 100 900;
+	font-style: italic;
+}
+
+@font-face {
+	font-family: "CARDOT";
+	src: url(assets/fonts/CARDOT/CARDOT_Regular.ttf) format("truetype");
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "CARDOT";
+	src: url(assets/fonts/CARDOT/CARDOT_Semibold.ttf) format("truetype");
+	font-weight: bold;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "Digital Dismay";
+	src: url(assets/fonts/Digital_Dismay/Digital_Dismay.otf) format("opentype");
+	font-weight: normal;
+	font-style: normal;
+}
+
+:root {
+	--color-white: white;
+	--color-orange: #f39100;
+	--color-red: #ed1c24;
+	--color-blue: #0066b3;
+	--color-dark-red: #ad0000;
+	--color-purple-blue: #667eea;
+}
+
+* {
+	font-family: "Inter", sans-serif;
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+}
+
+.cardot,
+.cardot * {
+	font-family: "CARDOT", sans-serif;
+}
+
+.seven-segment-display,
+.seven-segment-display * {
+	font-family: "Digital Dismay", monospace;
+}
+
+.bold {
+	font-weight: bold;
+}
+
+.children-center {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.hidden {
+	display: none;
+}

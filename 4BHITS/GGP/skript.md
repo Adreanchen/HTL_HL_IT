@@ -1,6 +1,6 @@
 # [4.Klassen_Jahresskript_Schüler.pdf](4.Klassen_Jahresskript_Schüler.pdf)
 
-# Grundlagen der Wirtschaft
+# I Grundlagen der Wirtschaft
 
 ## 1. Einteilung der Güter (Buch S. 116)
 
@@ -104,3 +104,23 @@ wenige Anbieter oder Nachfrager
 viele Anbieter und viele Nachfrager ZB
 
 * Supermarkt
+
+
+
+# II Wirtschaftlicher und Sozialer Wandel
+
+## 1. Wirtschaftssektoren
+
+| **Beruf**                   | **Sektor**                                       | **Beruf**              | **Sektor**                                   |
+| --------------------------- | ------------------------------------------------ | ---------------------- | -------------------------------------------- |
+| **Lehrerin**                | Tertiärer Sektor (Dienstleistungen)              | **Anwalt**             | Tertiärer Sektor *(od. Quartär)*             |
+| **Bauer**                   | Primärer Sektor (Urproduktion / Landwirtschaft)  | **Verkäufer**          | Tertiärer Sektor (Handel / Dienstleistung)   |
+| **Fabrikarbeiter**          | Sekundärer Sektor (Industrie / Produktion)       | **IT-Spezialist**      | Tertiärer Sektor *(od. Quartär / IT)*        |
+| **Briefträger**             | Tertiärer Sektor (Dienstleistungen / Logistik)   | **Förster**            | Primärer Sektor (Forstwirtschaft)            |
+| **Ingenieure**              | Sekundärer Sektor *(od. Quartär / Entwicklung)*  | **Wirtschaftsberater** | Tertiärer Sektor *(od. Quartär / Beratung)*  |
+| **Bergbauarbeiter**         | Primärer Sektor (Rohstoffgewinnung)              | **Tischlerin**         | Sekundärer Sektor (Handwerk)                 |
+| **Biotechnologin**          | Sekundärer Sektor *(od. Quartär / Forschung)*    | **Heilmasseurin**      | Tertiärer Sektor (Gesundheitsdienstleistung) |
+| **Sekretär**                | Tertiärer Sektor (Dienstleistungen / Verwaltung) | **Winzer**             | Primärer Sektor (alle drei)                  |
+| **Schweißer**               | Sekundärer Sektor (Handwerk / Industrie)         | **Arzt**               | Tertiärer Sektor (Gesundheitswesen)          |
+| **Müllabfuhr-Bediensteter** | Tertiärer Sektor (Dienstleistungen / Entsorgung) | **Bankangestellte**    | Tertiärer Sektor (Finanzdienstleistungen)    |
+| **Taxifahrer**              | Tertiärer Sektor (Verkehr / Transport)           | **Schauspielerin**     | Tertiärer Sektor (Kultur / Unterhaltung)     |

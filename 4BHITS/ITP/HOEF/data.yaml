@@ -1,0 +1,12 @@
+# YOLOv8 Dataset Configuration for FLL LEGO Robot Detection
+# If you export your labeled dataset from Roboflow (YOLOv8 format),
+# you can either overwrite this file or point 2_train_model.py to your exported data.yaml.
+
+path: ./dataset
+train: train/images
+val: valid/images
+
+# Single class: FLL LEGO Robot (human hands, arms, and mission models are left unlabeled as background)
+nc: 1
+names:
+  0: robot

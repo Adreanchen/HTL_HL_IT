@@ -1,0 +1,15 @@
+{
+  "short_name": "FLL Live",
+  "name": "FLL Robot Game Livestream",
+  "icons": [
+    {
+      "src": "assets/images/fll-logo-bg-white.png",
+      "type": "image/png",
+      "sizes": "1024x1024"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "orange",
+  "background_color": "orange"
+}
