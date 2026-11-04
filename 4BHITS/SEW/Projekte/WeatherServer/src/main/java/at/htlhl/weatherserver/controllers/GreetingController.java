@@ -9,11 +9,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 @RestController
 @RequestMapping("weatherserver/greetings")
 public class GreetingController {
 
     @GetMapping("/hello")
+    @Operation(summary = "say hello to the given name")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<String> sayHello(@RequestParam(defaultValue = "Hello World") String name) {
         if (!name.equalsIgnoreCase("Lieselotte")) {
@@ -24,9 +27,9 @@ public class GreetingController {
     }
 
     @GetMapping("/hello/{name}_{age}")
+    @Operation(summary = "say hello to name")
     @ResponseStatus(HttpStatus.OK)
-
     public String sayHelloAlternative(@PathVariable String name, @PathVariable Integer age) {
-        return String.format("Hello %s! (age: %d", name, age);
+        return String.format("Hello %s! (age: %d)", name, age);
     }
 }
