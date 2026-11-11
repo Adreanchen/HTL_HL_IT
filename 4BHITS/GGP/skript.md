@@ -124,3 +124,54 @@ viele Anbieter und viele Nachfrager ZB
 | **Schweißer**               | Sekundärer Sektor (Handwerk / Industrie)         | **Arzt**               | Tertiärer Sektor (Gesundheitswesen)          |
 | **Müllabfuhr-Bediensteter** | Tertiärer Sektor (Dienstleistungen / Entsorgung) | **Bankangestellte**    | Tertiärer Sektor (Finanzdienstleistungen)    |
 | **Taxifahrer**              | Tertiärer Sektor (Verkehr / Transport)           | **Schauspielerin**     | Tertiärer Sektor (Kultur / Unterhaltung)     |
+
+## 2. Strukturwandeln in Österreich
+
+Beschäftigte nach Wirtschaftssektoren (in %)
+
+|                  | Primärer Sektor | Sekundärer Sektor | Tertiärer Sektor |
+| ---------------- | --------------- | ----------------- | ---------------- |
+| Österreich: 1923 |                 |                   |                  |
+| Österreich: 2024 | 3%              | 15%               | 72%              |
+
+## 3. Sektoraler Wandel
+
+Das Flächendiagram zeigt die Entwicklung der drei Wirtschaftssektoren. Die x-Achse zeigt die Jahre von 1800 bis 2100 und die y-Achse zeigt den Anteil der Beschäftigten. Die Quelle ist aus dem GGP Buch Band III Seite 140. Der Primäre Sektor sinkt von 80% im Jahr 1800 kontinuierlich auf 10% im Jahr 2100. Der Sekundär Sektor beginnt im Jahr 1800 mit 10% erreicht seinen Höhepunkt mit 35% im Jahr 1950 und sinkt wieder kontinuierlich auf 10% im Jahr 2100. Der Tertiäre Sektor hat im Jahr 1800 10% steigt langsam an bis zum Jahr 1950 auf 35% und danach bis zum Jahr 2100 steigt es bis zu 80%  enorm an. 
+
+Die Dominanz des Primären Sektors um 1800: 
+
+* vorindustrielle Zeit
+* Selbstversorgung (Subsistenzwirtschaft)
+* Landwirtschaft ohne Maschinen
+
+Rückgang des Primären Sektors:
+
+* besser Bildungsmöglichkeiten
+* Mechanisierung ?
+* Importe
+* vom Land in die Stadt
+* Erbfolge
+* von Haupterwerbs zu Nebenerwerbs
+
+Anstieg des Sekundären Sektors: 
+
+* Beginn der Industrialisierung (Revolution)
+* Massenmotorisierung
+* Wirtschaftswunder
+* Wiederaufbau (nach dem Krieg)
+
+Rückgang des Sekundären Sektors:
+
+* Digitale Revolution
+* Rationalisierung
+* Outsourcing 
+
+Die Dominanz des Tertiären Sektors:  
+
+* bessere Ausbildung
+* Digitalisierung
+* Massenkosum 
+* Höheres Einkommen -> lässt den Dienstleistungssektor automatisch wachsen
+* mehr Arbeitsplätze
+* geregelte Arbeitszeiten, mehr Freizeit, 
+

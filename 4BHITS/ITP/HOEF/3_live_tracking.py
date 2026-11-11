@@ -390,8 +390,16 @@ def run_live_tracking(
 ) -> None:
 	enable_high_res_timer()
 
-	# Verify CUDA availability and select device
-	if device.startswith("cuda") and not torch.cuda.is_available():
+	# Auto-resolve acceleration device
+	dev_lower = str(device).strip().lower()
+	if dev_lower in ("auto", "default", ""):
+		if torch.cuda.is_available():
+			device = "cuda:0"
+		elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+			device = "mps"
+		else:
+			device = "cpu"
+	elif device.startswith("cuda") and not torch.cuda.is_available():
 		print("[WARN] CUDA is not available in current PyTorch environment; falling back to CPU.")
 		device = "cpu"
 	use_half = device.startswith("cuda")
@@ -635,8 +643,8 @@ def parse_args():
 	parser.add_argument(
 		"--device",
 		type=str,
-		default="cuda:0",
-		help="Inference device (default: cuda:0)",
+		default="auto",
+		help="Inference device: 'auto' (CUDA -> MPS -> CPU), 'cuda:0', 'mps', or 'cpu' (default: auto)",
 	)
 	parser.add_argument(
 		"--imgsz",

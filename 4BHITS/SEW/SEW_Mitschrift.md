@@ -106,7 +106,7 @@ publci class A {
 **Vorteile von Dependency Injection:** 
 
 - Trennung von Zuständigkeiten 
-- Ein lose gekoppeltes System 
+- Ein loses gekoppeltes System 
 - Sehr hilfreich beim Testen (Test-Mockups werden injiziert) 
 
 ### Unveränderliche Objekte / Immutable Objects
@@ -205,6 +205,7 @@ public enum MySingleton{
     public MySingleton getInstance(){ 
         return INSTANCE; 
     } 
+    // Other Methods ...
 } 
 ```
 

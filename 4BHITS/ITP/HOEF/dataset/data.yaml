@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['lego_robot']
+
+roboflow:
+  workspace: robotracker
+  project: lego-robot-detection-8wkdf
+  version: 1
+  license: Private
+  url: https://app.roboflow.com/robotracker/lego-robot-detection-8wkdf/1

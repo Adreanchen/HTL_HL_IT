@@ -24,20 +24,37 @@ DEFAULT_BASE_MODEL = "yolov8n.pt"
 DEFAULT_EPOCHS = 50
 DEFAULT_IMGSZ = 640
 DEFAULT_BATCH = 16
-TARGET_DEVICE = "cuda:0"
+DEFAULT_DEVICE = "auto"
 
 
-def verify_cuda_device(device: str = TARGET_DEVICE) -> None:
-	"""Verifies that PyTorch with CUDA acceleration is available for `cuda:0`."""
-	if not torch.cuda.is_available():
-		raise RuntimeError(
-			"CUDA GPU is not available to PyTorch (torch.cuda.is_available() == False).\n"
-			"Please install the CUDA-enabled PyTorch build using:\n"
-			"  pip install -r requirements.txt"
-		)
-	gpu_name = torch.cuda.get_device_name(0)
-	vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024 ** 3)
-	print(f"[GPU] Using {device} -> {gpu_name} ({vram_gb:.1f} GB VRAM, CUDA {torch.version.cuda})")
+def resolve_training_device(device: str = DEFAULT_DEVICE) -> str:
+	"""Validates or auto-detects the best hardware acceleration device (CUDA -> Apple MPS -> CPU)."""
+	dev_lower = str(device).strip().lower()
+	if dev_lower in ("auto", "default", ""):
+		if torch.cuda.is_available():
+			dev_lower = "cuda:0"
+		elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+			dev_lower = "mps"
+		else:
+			dev_lower = "cpu"
+
+	if dev_lower.startswith("cuda"):
+		if not torch.cuda.is_available():
+			print("[WARN] CUDA requested but not available in current PyTorch build. Falling back to CPU.")
+			return "cpu"
+		gpu_name = torch.cuda.get_device_name(0)
+		vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024 ** 3)
+		print(f"[GPU] Using {dev_lower} -> {gpu_name} ({vram_gb:.1f} GB VRAM, CUDA {torch.version.cuda})")
+		return dev_lower
+	elif dev_lower == "mps":
+		if not (hasattr(torch.backends, "mps") and torch.backends.mps.is_available()):
+			print("[WARN] Apple MPS requested but not available. Falling back to CPU.")
+			return "cpu"
+		print("[ACCEL] Using Apple Silicon Metal Performance Shaders (MPS).")
+		return "mps"
+	else:
+		print("[INFO] Training on CPU (training may take longer without dedicated GPU acceleration).")
+		return "cpu"
 
 
 def train_robot_detector(
@@ -46,12 +63,12 @@ def train_robot_detector(
 	epochs: int = DEFAULT_EPOCHS,
 	imgsz: int = DEFAULT_IMGSZ,
 	batch: int = DEFAULT_BATCH,
-	device: str = TARGET_DEVICE,
+	device: str = DEFAULT_DEVICE,
 	project: str = "runs/detect",
 	name: str = "fll_robot_yolov8n",
 ) -> Path:
 	"""
-	Loads `yolov8n.pt` and fine-tunes it for `epochs` epochs on `device='cuda:0'`.
+	Loads `yolov8n.pt` and fine-tunes it for `epochs` epochs on the selected device.
 	Returns the path to the trained `best.pt` weights.
 	"""
 	data_path = Path(data_yaml).resolve()
@@ -61,30 +78,30 @@ def train_robot_detector(
 			f"Ensure 'data.yaml' exists and points to your labeled train/valid image folders."
 		)
 
-	verify_cuda_device(device)
+	resolved_device = resolve_training_device(device)
 
 	print(f"[INFO] Loading base model: {base_weights}")
 	model = YOLO(base_weights)
 
-	print(f"[INFO] Starting YOLOv8 fine-tuning for {epochs} epochs on {device}...")
+	print(f"[INFO] Starting YOLOv8 fine-tuning for {epochs} epochs on {resolved_device}...")
 	results = model.train(
 		data=str(data_path),
 		epochs=epochs,
 		imgsz=imgsz,
 		batch=batch,
-		device=device,          # Explicitly target GPU cuda:0
+		device=resolved_device,
 		project=project,
 		name=name,
 		exist_ok=True,
 		pretrained=True,
 		single_cls=True,        # Enforce single-class ("robot") detection
-		amp=True,               # Mixed-precision training for faster RTX GPU throughput
+		amp=resolved_device.startswith("cuda"),  # Mixed-precision training for faster GPU throughput
 		mosaic=1.0,             # Helps generalize across colorful FLL mat backgrounds
 		hsv_h=0.015,
 		hsv_s=0.5,
 		hsv_v=0.4,
 		fliplr=0.5,
-		workers=4,
+		workers=4 if not resolved_device.startswith("cpu") else 0,
 		verbose=True,
 	)
 
@@ -152,8 +169,8 @@ def parse_args():
 	parser.add_argument(
 		"--device",
 		type=str,
-		default=TARGET_DEVICE,
-		help=f"CUDA device string (default: {TARGET_DEVICE})",
+		default=DEFAULT_DEVICE,
+		help=f"Acceleration device: 'auto' (CUDA -> MPS -> CPU), 'cuda:0', 'mps', or 'cpu' (default: {DEFAULT_DEVICE})",
 	)
 	return parser.parse_args()
 
