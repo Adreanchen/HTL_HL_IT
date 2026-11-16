@@ -262,3 +262,7 @@ def left_control():
 @app.get("/video-stream/blue-team/control")
 def right_control():
 	return mjpeg_stream(right_control_broadcaster)
+
+
+from .raw_recorder import attach_raw_recorder
+attach_raw_recorder(app, pipeline)

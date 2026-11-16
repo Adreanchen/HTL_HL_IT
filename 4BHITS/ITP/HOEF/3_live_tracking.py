@@ -76,7 +76,7 @@ TARGET_SMOOTH_SPEED = 8.0    # Stage-1 target trajectory smoothing rate
 PAN_SPEED = 6.5              # Stage-2 fluid-head camera pan speed
 ZOOM_SPEED = 4.5             # Stage-2 smooth zoom in/out speed
 PAN_DEADZONE_RATIO = 0.012   # Deadzone ratio to prevent micro-jitter
-OUT_OF_FRAME_HOLD_SEC = 0.30 # Seconds to hold focus before smoothly zooming out when lost/stopped
+OUT_OF_FRAME_HOLD_SEC = 0.45 # Seconds to hold focus before smoothly zooming out when lost
 
 
 def enable_high_res_timer() -> None:
@@ -255,7 +255,10 @@ class MotionActivityGate:
 		base = float(cv2.mean(diff)[0])
 		th = max(14, min(36, int(round(base * 2.2 + 11.0))))
 		_, mask = cv2.threshold(diff, th, 255, cv2.THRESH_BINARY)
-		return cv2.morphologyEx(mask, cv2.MORPH_OPEN, self.kernel)
+		opened = cv2.morphologyEx(mask, cv2.MORPH_OPEN, self.kernel)
+		if cv2.countNonZero(opened) > int(self.width * self.height * 0.45):
+			return np.zeros((self.height, self.width), dtype=np.uint8)
+		return opened
 
 	def is_bbox_moving(self, motion_mask: np.ndarray, bbox: Tuple[int, int, int, int], fw: int, fh: int) -> bool:
 		x1, y1, x2, y2 = bbox
@@ -271,6 +274,74 @@ class MotionActivityGate:
 		return active_px >= 10
 
 
+def is_human_hand_or_arm(frame: np.ndarray, bbox: Tuple[int, int, int, int]) -> bool:
+	"""
+	Rejects human hands, fingers, and arms reaching over the table border by combining
+	YCrCb + HSV skin-tone detection with LEGO chassis brick counter-evidence.
+	"""
+	fh, fw = frame.shape[:2]
+	x1, y1, x2, y2 = bbox
+	x1 = max(0, min(fw - 1, x1))
+	y1 = max(0, min(fh - 1, y1))
+	x2 = max(x1 + 1, min(fw, x2))
+	y2 = max(y1 + 1, min(fh, y2))
+
+	crop = frame[y1:y2, x1:x2]
+	area = float((x2 - x1) * (y2 - y1))
+	if area <= 0 or crop.size == 0:
+		return False
+
+	ycrcb = cv2.cvtColor(crop, cv2.COLOR_BGR2YCrCb)
+	hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+	skin_ycrcb = cv2.inRange(ycrcb, (40, 135, 80), (255, 172, 125))
+	skin_hsv = cv2.inRange(hsv, (0, 35, 60), (20, 175, 255))
+	skin_mask = cv2.bitwise_and(skin_ycrcb, skin_hsv)
+	skin_ratio = cv2.countNonZero(skin_mask) / area
+
+	# LEGO SPIKE / Mindstorms robots have bright white/grey hub surfaces or cyan/colored bricks
+	white_grey_px = cv2.countNonZero(cv2.inRange(hsv, (0, 0, 165), (180, 40, 255)))
+	cyan_px = cv2.countNonZero(cv2.inRange(hsv, (82, 60, 55), (106, 255, 255)))
+	lego_ratio = (white_grey_px + cyan_px) / area
+
+	touches_border = (
+		x1 <= int(fw * 0.03)
+		or y1 <= int(fh * 0.03)
+		or x2 >= int(fw * 0.97)
+		or y2 >= int(fh * 0.97)
+	)
+	if touches_border and skin_ratio > 0.22 and lego_ratio < 0.20:
+		return True
+	if skin_ratio > 0.36 and lego_ratio < 0.18:
+		return True
+	return False
+
+
+def has_lego_robot_appearance(frame: np.ndarray, bbox: Tuple[int, int, int, int]) -> bool:
+	"""
+	Verifies that a static candidate bounding box actually contains LEGO robot visual features
+	(bright white/light-grey hub/chassis bricks or SPIKE cyan accents) rather than a dark
+	mission model or flat mat artwork.
+	"""
+	fh, fw = frame.shape[:2]
+	x1, y1, x2, y2 = bbox
+	x1 = max(0, min(fw - 1, x1))
+	y1 = max(0, min(fh - 1, y1))
+	x2 = max(x1 + 1, min(fw, x2))
+	y2 = max(y1 + 1, min(fh, y2))
+
+	crop = frame[y1:y2, x1:x2]
+	area = float((x2 - x1) * (y2 - y1))
+	if area < 64.0 or crop.size == 0:
+		return False
+
+	hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+	white_px = cv2.countNonZero(cv2.inRange(hsv, (0, 0, 185), (180, 45, 255)))
+	cyan_px = cv2.countNonZero(cv2.inRange(hsv, (82, 60, 55), (106, 255, 255)))
+	white_ratio = white_px / area
+	cyan_ratio = cyan_px / area
+	return white_ratio >= 0.08 or cyan_ratio >= 0.03
+
+
 def select_best_robot_detection(
 	results,
 	frame_w: int,
@@ -279,11 +350,12 @@ def select_best_robot_detection(
 	last_center: Optional[Tuple[int, int]],
 	motion_gate: Optional[MotionActivityGate] = None,
 	motion_mask: Optional[np.ndarray] = None,
-	require_motion: bool = True,
+	require_motion: bool = False,
+	frame: Optional[np.ndarray] = None,
 ) -> Optional[Tuple[int, int, int, int, int, int, float]]:
 	"""
 	Extracts the best "robot" bounding box `(x1, y1, x2, y2, cx, cy, conf)` from YOLOv8 output.
-	Applies confidence, area, and optional movement filtering to reject hands, shadows, and static clutter.
+	Applies confidence, area, skin/hand rejection, and optional movement filtering.
 	"""
 	if not results or len(results) == 0:
 		return None
@@ -318,15 +390,24 @@ def select_best_robot_detection(
 		if area < total_area * MIN_BOX_AREA_RATIO or area > total_area * MAX_BOX_AREA_RATIO:
 			continue
 
-		if require_motion and motion_gate is not None and motion_mask is not None:
-			if not motion_gate.is_bbox_moving(motion_mask, (x1, y1, x2, y2), frame_w, frame_h):
+		is_moving = False
+		if motion_gate is not None and motion_mask is not None:
+			is_moving = motion_gate.is_bbox_moving(motion_mask, (x1, y1, x2, y2), frame_w, frame_h)
+
+		if require_motion and not is_moving:
+			continue
+
+		if frame is not None:
+			if is_human_hand_or_arm(frame, (x1, y1, x2, y2)):
+				continue
+			if not has_lego_robot_appearance(frame, (x1, y1, x2, y2)):
 				continue
 
 		cx = int(round((x1 + x2) * 0.5))
 		cy = int(round((y1 + y2) * 0.5))
 
 		# Score by confidence with a gentle continuity bonus near previous tracked center
-		score = conf
+		score = conf * (1.15 if is_moving else 1.0)
 		if last_center is not None:
 			dist = math.hypot(cx - last_center[0], cy - last_center[1])
 			if dist < max(frame_w, frame_h) * 0.35:
@@ -339,14 +420,316 @@ def select_best_robot_detection(
 	return best_candidate
 
 
+def _find_runs_1d(profile: np.ndarray, thresh: float, max_gap: int = 3, min_len: int = 2):
+	indices = np.where(profile >= thresh)[0]
+	runs = []
+	for idx in indices:
+		i = int(idx)
+		if not runs or i > runs[-1][1] + max_gap:
+			runs.append([i, i])
+		else:
+			runs[-1][1] = i
+	return [r for r in runs if (r[1] - r[0] + 1) >= min_len]
+
+
+def _detect_dual_table_rois(frame: np.ndarray):
+	"""
+	Detects the inner playable bounds of Left and Right FLL tables from a full wide-angle
+	camera frame so `detect_stationary_lego_robot` works both on full dual-table frames
+	and on cropped single-table frames.
+	"""
+	h, w = frame.shape[:2]
+	scale = min(1.0, 512.0 / max(1, w))
+	sw = max(64, int(w * scale))
+	sh = max(64, int(h * scale))
+
+	small = cv2.resize(frame, (sw, sh), interpolation=cv2.INTER_AREA)
+	hsv = cv2.cvtColor(small, cv2.COLOR_BGR2HSV)
+	gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
+
+	wood_mask = (cv2.inRange(hsv, (7, 30, 70), (32, 185, 245)) > 0).astype(np.float32)
+	vy0, vy1 = int(sh * 0.15), int(sh * 0.85)
+	col_wood = wood_mask[vy0:vy1, :].mean(axis=0)
+	min_rail_w = max(2, int(sw * 0.012))
+	v_runs = _find_runs_1d(col_wood, 0.40, max_gap=4, min_len=min_rail_w)
+
+	left_rails = [r for r in v_runs if r[1] < sw * 0.28]
+	center_rails = [r for r in v_runs if sw * 0.35 < (r[0] + r[1]) * 0.5 < sw * 0.65]
+	right_rails = [r for r in v_runs if r[0] > sw * 0.72]
+
+	grad_x = np.abs(cv2.Sobel(gray, cv2.CV_32F, 1, 0, ksize=3))
+	col_grad = grad_x[vy0:vy1, :].mean(axis=0)
+
+	if left_rails:
+		lx1 = (left_rails[-1][1] + 1) / float(sw)
+	else:
+		l_zone = col_grad[int(sw * 0.02) : int(sw * 0.20)]
+		if len(l_zone) and float(l_zone.max()) > float(col_grad.mean()) * 1.8:
+			lx1 = (int(np.argmax(l_zone)) + int(sw * 0.02)) / float(sw)
+		else:
+			lx1 = 0.0
+
+	if center_rails:
+		c_best = max(center_rails, key=lambda r: float(col_wood[r[0] : r[1] + 1].sum()))
+		lx2 = c_best[0] / float(sw)
+		rx1 = (c_best[1] + 1) / float(sw)
+	else:
+		c_zone = col_grad[int(sw * 0.42) : int(sw * 0.58)]
+		cx = (int(np.argmax(c_zone)) + int(sw * 0.42)) / float(sw) if len(c_zone) else 0.5
+		lx2 = max(0.35, cx - 0.005)
+		rx1 = min(0.65, cx + 0.005)
+
+	if right_rails:
+		rx2 = right_rails[0][0] / float(sw)
+	else:
+		r_zone = col_grad[int(sw * 0.80) : int(sw * 0.98)]
+		if len(r_zone) and float(r_zone.max()) > float(col_grad.mean()) * 1.8:
+			rx2 = (int(np.argmax(r_zone)) + int(sw * 0.80)) / float(sw)
+		else:
+			rx2 = 1.0
+
+	if not left_rails and right_rails:
+		lx1 = max(0.0, min(lx1, lx2 - (rx2 - rx1)))
+	elif left_rails and not right_rails:
+		rx2 = min(1.0, max(rx2, rx1 + (lx2 - lx1)))
+
+	min_rail_h = max(2, int(sh * 0.012))
+
+	def find_y_bounds(x_start_r: float, x_end_r: float):
+		xa = max(0, int(x_start_r * sw) + 2)
+		xb = min(sw, int(x_end_r * sw) - 2)
+		if xb - xa < 10:
+			return 0.0, 1.0
+		row_wood = wood_mask[:, xa:xb].mean(axis=1)
+		row_roughness = grad_x[:, xa:xb].mean(axis=1)
+		smooth_wood = np.where(row_roughness < 38.0, row_wood, 0.0)
+		h_runs = _find_runs_1d(smooth_wood, 0.40, max_gap=3, min_len=min_rail_h)
+		top_cands = [r for r in h_runs if r[1] < sh * 0.25]
+		bot_cands = [r for r in h_runs if r[0] > sh * 0.78]
+		y1 = (top_cands[-1][1] + 1) / float(sh) if top_cands else 0.0
+		y2 = bot_cands[0][0] / float(sh) if bot_cands else 1.0
+		return y1, y2
+
+	ly1, ly2 = find_y_bounds(lx1, lx2)
+	ry1, ry2 = find_y_bounds(rx1, rx2)
+	if ly1 > 0.01 and ry1 == 0.0:
+		ry1 = ly1
+	elif ry1 > 0.01 and ly1 == 0.0:
+		ly1 = ry1
+	if ly2 < 0.99 and ry2 == 1.0:
+		ry2 = ly2
+	elif ry2 < 0.99 and ly2 == 1.0:
+		ly2 = ry2
+
+	if (lx2 - lx1) < 0.18 or (rx2 - rx1) < 0.18 or (ly2 - ly1) < 0.40 or (ry2 - ry1) < 0.40:
+		return [(0, 0, w // 2, h), (w // 2, 0, w, h)]
+
+	return [
+		(int(lx1 * w), int(ly1 * h), int(lx2 * w), int(ly2 * h)),
+		(int(rx1 * w), int(ry1 * h), int(rx2 * w), int(ry2 * h)),
+	]
+
+
+def _detect_stationary_on_single_table(
+	table_frame: np.ndarray,
+) -> Optional[Tuple[int, int, int, int, float]]:
+	"""
+	Detects a LEGO SPIKE Prime / Technic robot standing on a single FLL table mat or inside
+	any of the white corner launch areas while ignoring printed mat graphics and mission models.
+	Returns `(x1, y1, x2, y2, conf)` in `table_frame` coordinates or `None`.
+	"""
+	th, tw = table_frame.shape[:2]
+	if th < 32 or tw < 32:
+		return None
+
+	gray_full = cv2.cvtColor(table_frame, cv2.COLOR_BGR2GRAY)
+	# Ignore outer 4px in case of screenshot border
+	inner_gray = gray_full[4 : max(5, th - 4), 4 : max(5, tw - 4)]
+	valid_cols = np.where(inner_gray.mean(axis=0) > 38)[0] + 4
+	valid_rows = np.where(inner_gray.mean(axis=1) > 38)[0] + 4
+	if len(valid_cols) < 16 or len(valid_rows) < 16:
+		ox0, oy0, ox1, oy1 = 0, 0, tw, th
+	else:
+		ox0, ox1 = max(0, int(valid_cols[0])), min(tw, int(valid_cols[-1] + 1))
+		oy0, oy1 = max(0, int(valid_rows[0])), min(th, int(valid_rows[-1] + 1))
+
+	sub_img = table_frame[oy0:oy1, ox0:ox1]
+	sh, sw = sub_img.shape[:2]
+	if sh < 32 or sw < 32:
+		return None
+
+	W, H_grid = 320, 560
+	img = cv2.resize(sub_img, (W, H_grid), interpolation=cv2.INTER_AREA)
+	hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+	H, S, V = hsv[:, :, 0], hsv[:, :, 1], hsv[:, :, 2]
+	B = img[:, :, 0].astype(np.int16)
+	G = img[:, :, 1].astype(np.int16)
+	R = img[:, :, 2].astype(np.int16)
+
+	kernel_small = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+	kernel_hub = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+	kernel_cluster = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (21, 21))
+
+	# LEGO SPIKE Prime Medium Azure / Cyan wheel & motor signature
+	teal_mask = (
+		(H >= 64) & (H <= 108) & (S >= 42) & (V >= 60) & (V <= 215) & (B > R + 10) & (G > R + 8)
+	).astype(np.uint8) * 255
+	teal_mask = cv2.morphologyEx(teal_mask, cv2.MORPH_OPEN, kernel_small)
+
+	# 1. Robot on the mat: solid bright rectangular hub top + adjacent cyan wheel/accents
+	hub_mask = ((V >= 208) & (S <= 54) & (R >= 202) & (B >= 188)).astype(np.uint8) * 255
+	hub_mask = cv2.morphologyEx(hub_mask, cv2.MORPH_OPEN, kernel_hub)
+
+	contours, _ = cv2.findContours(hub_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+	best_box = None
+	best_score = 0.0
+	for c in contours:
+		area = cv2.contourArea(c)
+		if area < 95 or area > 1600:
+			continue
+		x, y, w, h = cv2.boundingRect(c)
+		if w < 10 or h < 10 or w > 95 or h > 95:
+			continue
+		hull_area = max(1.0, cv2.contourArea(cv2.convexHull(c)))
+		solidity = area / hull_area
+		aspect = max(w, h) / max(1.0, min(w, h))
+		if solidity < 0.70 or aspect > 2.4:
+			continue
+		# Reject printed black-and-white line-following ovals (which have a dark stripe down their center)
+		cx0, cy0 = x + w // 4, y + h // 4
+		cx1, cy1 = max(cx0 + 2, x + (3 * w) // 4), max(cy0 + 2, y + (3 * h) // 4)
+		center_v = V[cy0:cy1, cx0:cx1]
+		if float(np.percentile(center_v, 15)) < 185.0 or float(center_v.mean()) < 210.0:
+			continue
+		x0, y0 = max(0, x - 18), max(0, y - 18)
+		x1, y1 = min(W, x + w + 18), min(H_grid, y + h + 18)
+		teal_near = int(np.count_nonzero(teal_mask[y0:y1, x0:x1]))
+		if teal_near < 28:
+			continue
+		rx0, ry0 = max(0, x - 12), max(0, y - 10)
+		rx1, ry1 = min(W, x + w + 16), min(H_grid, y + h + 20)
+		score = float(teal_near) * solidity
+		if score > best_score:
+			best_score = score
+			best_box = (rx0, ry0, rx1 - rx0, ry1 - ry0, min(0.95, 0.75 + teal_near / 400.0))
+
+	if best_box is not None:
+		bx, by, bw, bh, conf = best_box
+		fx = ox0 + int(round(bx * sw / float(W)))
+		fy = oy0 + int(round(by * sh / float(H_grid)))
+		fw_box = int(round(bw * sw / float(W)))
+		fh_box = int(round(bh * sh / float(H_grid)))
+		return (fx, fy, fx + fw_box, fy + fh_box, round(conf, 2))
+
+	# 2. Robot inside any of the 4 white quarter-circle corner launch areas
+	corners = (
+		(0, 135, 0, 150, 0, 0),
+		(0, 135, H_grid - 150, H_grid, 0, H_grid),
+		(W - 135, W, 0, 150, W, 0),
+		(W - 135, W, H_grid - 150, H_grid, W, H_grid),
+	)
+	for x0, x1, y0, y1, cx_c, cy_c in corners:
+		ch, cs, cv_ = H[y0:y1, x0:x1], S[y0:y1, x0:x1], V[y0:y1, x0:x1]
+		white_frac = np.count_nonzero((cv_ > 185) & (cs < 48)) / float(ch.size)
+		if white_frac < 0.28:
+			continue
+		yy, xx = np.mgrid[y0:y1, x0:x1]
+		dist = np.hypot(xx - cx_c, yy - cy_c)
+		in_arc = ((dist > 14) & (dist < 118)).astype(np.uint8) * 255
+		teal_in_arc = cv2.bitwise_and(teal_mask[y0:y1, x0:x1], in_arc)
+		teal_cnt = int(np.count_nonzero(teal_in_arc))
+		if teal_cnt >= 35:
+			clustered = cv2.morphologyEx(teal_in_arc, cv2.MORPH_CLOSE, kernel_cluster)
+			t_cnts, _ = cv2.findContours(clustered, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+			if not t_cnts:
+				continue
+			main_c = max(t_cnts, key=cv2.contourArea)
+			tx, ty, tw_c, th_c = cv2.boundingRect(main_c)
+			tx0, ty0 = x0 + tx, y0 + ty
+			tx1, ty1 = tx0 + tw_c, ty0 + th_c
+			rx0 = max(x0 + 4, tx0 - 24)
+			ry0 = max(y0 + 4, ty0 - 14)
+			rx1 = min(x1 - 4, tx1 + 10)
+			ry1 = min(y1 - 4, ty1 + 26)
+			bw, bh = max(40, rx1 - rx0), max(44, ry1 - ry0)
+			fx = ox0 + int(round(rx0 * sw / float(W)))
+			fy = oy0 + int(round(ry0 * sh / float(H_grid)))
+			fw_box = int(round(bw * sw / float(W)))
+			fh_box = int(round(bh * sh / float(H_grid)))
+			conf = min(0.95, 0.78 + teal_cnt / 400.0)
+			return (fx, fy, fx + fw_box, fy + fh_box, round(conf, 2))
+
+	return None
+
+
+def detect_stationary_lego_robot(
+	frame: np.ndarray,
+	last_center: Optional[Tuple[int, int]] = None,
+) -> Optional[Tuple[int, int, int, int, int, int, float]]:
+	"""
+	Visual LEGO SPIKE Prime / Mindstorms robot detector for stationary and slow-moving robots.
+	Handles both cropped single-table frames and full wide-angle dual-table camera frames.
+	Returns `(x1, y1, x2, y2, cx, cy, conf)` in `frame` coordinates or `None`.
+	"""
+	if frame is None or frame.size == 0:
+		return None
+
+	fh, fw = frame.shape[:2]
+	if fh < 32 or fw < 32:
+		return None
+
+	regions = []
+	if fw >= int(fh * 1.15):
+		# Wide dual-table camera frame or split-view screenshot: inspect calibrated table ROIs
+		for rx1, ry1, rx2, ry2 in _detect_dual_table_rois(frame):
+			if (rx2 - rx1) >= 32 and (ry2 - ry1) >= 32:
+				regions.append((rx1, ry1, rx2, ry2))
+		# Also include left/right halves as fallback if calibrated ROIs differ from split view
+		regions.append((0, 0, fw // 2, fh))
+		regions.append((fw // 2, 0, fw, fh))
+	else:
+		regions.append((0, 0, fw, fh))
+
+	best_candidate = None
+	best_score = -1.0
+
+	for rx1, ry1, rx2, ry2 in regions:
+		sub = frame[ry1:ry2, rx1:rx2]
+		res = _detect_stationary_on_single_table(sub)
+		if res is None:
+			continue
+		sx1, sy1, sx2, sy2, conf = res
+		x1 = max(0, min(fw - 1, rx1 + sx1))
+		y1 = max(0, min(fh - 1, ry1 + sy1))
+		x2 = max(x1 + 1, min(fw, rx1 + sx2))
+		y2 = max(y1 + 1, min(fh, ry1 + sy2))
+		if is_human_hand_or_arm(frame, (x1, y1, x2, y2)):
+			continue
+		cx = int(round((x1 + x2) * 0.5))
+		cy = int(round((y1 + y2) * 0.5))
+		score = conf
+		if last_center is not None and math.hypot(cx - last_center[0], cy - last_center[1]) < max(fw, fh) * 0.35:
+			score *= 1.25
+		if score > best_score:
+			best_score = score
+			best_candidate = (x1, y1, x2, y2, cx, cy, conf)
+		# If calibrated table regions already matched, no need to re-test raw halves
+		if len(regions) > 2 and best_candidate is not None:
+			break
+
+	return best_candidate
+
+
 def detect_motion_fallback(
 	motion_mask: np.ndarray,
 	frame_w: int,
 	frame_h: int,
+	frame: Optional[np.ndarray] = None,
+	last_center: Optional[Tuple[int, int]] = None,
 ) -> Optional[Tuple[int, int, int, int, int, int, float]]:
 	"""
-	Fallback motion contour tracker used only when testing with un-finetuned `yolov8n.pt`
-	if the base COCO model does not classify a custom LEGO robot.
+	Fallback motion contour tracker used when a moving LEGO robot is not classified by YOLO
+	(e.g. before custom training or during fast motion blur), while rejecting human hands/arms.
 	"""
 	if cv2.countNonZero(motion_mask) < 20:
 		return None
@@ -364,19 +747,33 @@ def detect_motion_fallback(
 	sx = frame_w / float(mw)
 	sy = frame_h / float(mh)
 
-	best_c = max(contours, key=cv2.contourArea)
-	area = cv2.contourArea(best_c)
-	if area < 18 or area > (mw * mh * 0.50):
-		return None
+	best_candidate = None
+	best_score = -1.0
 
-	bx, by, bw, bh = cv2.boundingRect(best_c)
-	x1 = int(round(bx * sx))
-	y1 = int(round(by * sy))
-	x2 = min(frame_w, int(round((bx + bw) * sx)))
-	y2 = min(frame_h, int(round((by + bh) * sy)))
-	cx = int(round((x1 + x2) * 0.5))
-	cy = int(round((y1 + y2) * 0.5))
-	return (x1, y1, x2, y2, cx, cy, 1.0)
+	for c in contours:
+		area = cv2.contourArea(c)
+		if area < 18 or area > (mw * mh * 0.45):
+			continue
+
+		bx, by, bw, bh = cv2.boundingRect(c)
+		x1 = max(0, int(round(bx * sx)))
+		y1 = max(0, int(round(by * sy)))
+		x2 = min(frame_w, int(round((bx + bw) * sx)))
+		y2 = min(frame_h, int(round((by + bh) * sy)))
+
+		if frame is not None and is_human_hand_or_arm(frame, (x1, y1, x2, y2)):
+			continue
+
+		cx = int(round((x1 + x2) * 0.5))
+		cy = int(round((y1 + y2) * 0.5))
+		score = float(area)
+		if last_center is not None and math.hypot(cx - last_center[0], cy - last_center[1]) < max(frame_w, frame_h) * 0.35:
+			score *= 1.35
+		if score > best_score:
+			best_score = score
+			best_candidate = (x1, y1, x2, y2, cx, cy, 0.85)
+
+	return best_candidate
 
 
 def run_live_tracking(
@@ -386,7 +783,7 @@ def run_live_tracking(
 	iou_threshold: float = IOU_THRESHOLD,
 	device: str = "cuda:0",
 	imgsz: int = 640,
-	require_motion: bool = True,
+	require_motion: bool = False,
 ) -> None:
 	enable_high_res_timer()
 
@@ -482,11 +879,22 @@ def run_live_tracking(
 				motion_gate=motion_gate,
 				motion_mask=motion_mask,
 				require_motion=require_motion,
+				frame=frame,
 			)
 
-			# If testing with stock yolov8n.pt before custom training, allow motion fallback
-			if det is None and not is_custom_best:
-				det = detect_motion_fallback(motion_mask, frame_w, frame_h)
+			# Fallback 1: Moving LEGO robot contour tracker (rejecting human hands/arms)
+			if det is None:
+				det = detect_motion_fallback(
+					motion_mask=motion_mask,
+					frame_w=frame_w,
+					frame_h=frame_h,
+					frame=frame,
+					last_center=last_center,
+				)
+
+			# Fallback 2: Visual stationary LEGO robot detector (launch areas & field)
+			if det is None and not require_motion:
+				det = detect_stationary_lego_robot(frame, last_center=last_center)
 
 			if det is not None:
 				last_detection = det
@@ -655,7 +1063,14 @@ def parse_args():
 	parser.add_argument(
 		"--track-stationary",
 		action="store_true",
-		help="Stay focused on stationary robots even when there is no movement",
+		default=True,
+		help="Stay focused on stationary robots even when there is no movement (default: enabled)",
+	)
+	parser.add_argument(
+		"--require-motion",
+		action="store_true",
+		default=False,
+		help="Only track robots while they are actively moving",
 	)
 	return parser.parse_args()
 
@@ -671,7 +1086,7 @@ if __name__ == "__main__":
 			iou_threshold=args.iou,
 			device=args.device,
 			imgsz=args.imgsz,
-			require_motion=not args.track_stationary,
+			require_motion=bool(args.require_motion),
 		)
 	except Exception as exc:
 		print(f"[ERROR] {exc}", file=sys.stderr)

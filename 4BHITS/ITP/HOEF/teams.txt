@@ -1,5 +1,2 @@
-RoboKnights
-CyberHawks
-TechnoTitans
-BrickBuilders
-LegoWizards
+BRICK4FUTURE
+MECHANICS

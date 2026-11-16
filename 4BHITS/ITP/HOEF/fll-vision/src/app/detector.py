@@ -116,15 +116,19 @@ class AutoEnhancer:
 
 class DetectorHybrid:
 	"""
-	Multi-horizon 3-channel BGR motion detector optimized for FLL tables.
-	Tracks any actively moving object on the table and immediately clears focus
-	when there is no movement.
+	Hybrid LEGO Robot & Multi-Horizon Motion Detector optimized for FLL tables.
+	Detects and tracks the LEGO robot both when moving across the field and when
+	standing stationary (in the corner launch areas or on the mat), while ignoring
+	human hands/arms reaching in and returning None when no robot is present.
 	"""
 
 	def __init__(self):
 		self.kernel_open = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
 		self.kernel_dilate = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
 		self.kernel_close = cv2.getStructuringElement(cv2.MORPH_RECT, (15, 15))
+		self.kernel_small = np.ones((2, 2), dtype=np.uint8)
+		self.kernel_hub = np.ones((3, 3), dtype=np.uint8)
+		self.kernel_cluster = np.ones((9, 9), dtype=np.uint8)
 
 		self.history = deque(maxlen=5)
 		self.bg_float = None
@@ -160,10 +164,157 @@ class DetectorHybrid:
 
 	def _decay_and_none(self):
 		self.miss_streak += 1
-		if self.miss_streak >= 2:
+		if self.miss_streak >= 3:
 			self.confirm_streak = 0
 			self.last_center = None
 			self.smooth_bbox = None
+		return None
+
+	def _update_smooth_bbox(self, raw_cx: float, raw_cy: float, raw_w: float, raw_h: float, orig_w: int, orig_h: int):
+		self.miss_streak = 0
+		self.confirm_streak = max(CONFIRM_FRAMES, self.confirm_streak + 1)
+		if self.smooth_bbox is None:
+			self.smooth_bbox = (raw_cx, raw_cy, raw_w, raw_h)
+		else:
+			scx, scy, sw, sh = self.smooth_bbox
+			jump = math.hypot(raw_cx - scx, raw_cy - scy)
+			if jump > max(orig_w, orig_h) * 0.35:
+				self.smooth_bbox = (raw_cx, raw_cy, raw_w, raw_h)
+			else:
+				if jump > 2.0:
+					scx += (raw_cx - scx) * 0.68
+					scy += (raw_cy - scy) * 0.68
+				sw += (raw_w - sw) * 0.35
+				sh += (raw_h - sh) * 0.35
+				self.smooth_bbox = (scx, scy, sw, sh)
+
+		scx, scy, sw, sh = self.smooth_bbox
+		fx = max(0, int(round(scx - sw * 0.5)))
+		fy = max(0, int(round(scy - sh * 0.5)))
+		fw_box = max(16, min(orig_w - fx, int(round(sw))))
+		fh_box = max(16, min(orig_h - fy, int(round(sh))))
+		return (fx, fy, fw_box, fh_box)
+
+	def _detect_stationary_robot(self, table_frame: np.ndarray):
+		"""
+		Detects a LEGO SPIKE Prime / Technic robot standing on the mat or inside
+		any of the white corner launch areas while ignoring printed mat graphics
+		and mission models. Returns (x, y, w, h) in table_frame coordinates or None.
+		"""
+		th, tw = table_frame.shape[:2]
+		if th < 32 or tw < 32:
+			return None
+
+		gray_full = cv2.cvtColor(table_frame, cv2.COLOR_BGR2GRAY)
+		valid_cols = np.where(gray_full.mean(axis=0) > 38)[0]
+		valid_rows = np.where(gray_full.mean(axis=1) > 38)[0]
+		if len(valid_cols) < 16 or len(valid_rows) < 16:
+			ox0, oy0, ox1, oy1 = 0, 0, tw, th
+		else:
+			ox0, ox1 = int(valid_cols[0]), int(valid_cols[-1] + 1)
+			oy0, oy1 = int(valid_rows[0]), int(valid_rows[-1] + 1)
+
+		sub_img = table_frame[oy0:oy1, ox0:ox1]
+		sh, sw = sub_img.shape[:2]
+		if sh < 32 or sw < 32:
+			return None
+
+		W, H_grid = 320, 560
+		img = cv2.resize(sub_img, (W, H_grid), interpolation=cv2.INTER_AREA)
+		hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+		H, S, V = hsv[:, :, 0], hsv[:, :, 1], hsv[:, :, 2]
+		B = img[:, :, 0].astype(np.int16)
+		G = img[:, :, 1].astype(np.int16)
+		R = img[:, :, 2].astype(np.int16)
+
+		# LEGO SPIKE Prime Medium Azure / Cyan wheel & motor signature
+		teal_mask = (
+			(H >= 64) & (H <= 108) & (S >= 42) & (V >= 60) & (V <= 215) & (B > R + 10) & (G > R + 8)
+		).astype(np.uint8) * 255
+		teal_mask = cv2.morphologyEx(teal_mask, cv2.MORPH_OPEN, self.kernel_small)
+
+		# 1. Robot on the mat: solid bright rectangular hub top + adjacent cyan wheel/accents
+		hub_mask = ((V >= 208) & (S <= 54) & (R >= 202) & (B >= 188)).astype(np.uint8) * 255
+		hub_mask = cv2.morphologyEx(hub_mask, cv2.MORPH_OPEN, self.kernel_hub)
+
+		contours, _ = cv2.findContours(hub_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+		best_box = None
+		best_score = 0.0
+		for c in contours:
+			area = cv2.contourArea(c)
+			if area < 150 or area > 1600:
+				continue
+			x, y, w, h = cv2.boundingRect(c)
+			if w < 12 or h < 12 or w > 95 or h > 95:
+				continue
+			hull_area = max(1.0, cv2.contourArea(cv2.convexHull(c)))
+			solidity = area / hull_area
+			aspect = max(w, h) / max(1.0, min(w, h))
+			if solidity < 0.70 or aspect > 2.4:
+				continue
+			# Reject printed black-and-white line-following ovals (which have a dark stripe down their center)
+			cx0, cy0 = x + w // 4, y + h // 4
+			cx1, cy1 = max(cx0 + 2, x + (3 * w) // 4), max(cy0 + 2, y + (3 * h) // 4)
+			center_v = V[cy0:cy1, cx0:cx1]
+			if float(np.percentile(center_v, 15)) < 185.0 or float(center_v.mean()) < 210.0:
+				continue
+			x0, y0 = max(0, x - 18), max(0, y - 18)
+			x1, y1 = min(W, x + w + 18), min(H_grid, y + h + 18)
+			teal_near = int(np.count_nonzero(teal_mask[y0:y1, x0:x1]))
+			if teal_near < 28:
+				continue
+			rx0, ry0 = max(0, x - 12), max(0, y - 10)
+			rx1, ry1 = min(W, x + w + 16), min(H_grid, y + h + 20)
+			score = float(teal_near) * solidity
+			if score > best_score:
+				best_score = score
+				best_box = (rx0, ry0, rx1 - rx0, ry1 - ry0)
+
+		if best_box is not None:
+			bx, by, bw, bh = best_box
+			fx = ox0 + int(round(bx * sw / float(W)))
+			fy = oy0 + int(round(by * sh / float(H_grid)))
+			fw = int(round(bw * sw / float(W)))
+			fh = int(round(bh * sh / float(H_grid)))
+			return (fx, fy, fw, fh)
+
+		# 2. Robot inside any of the 4 white quarter-circle corner launch areas
+		corners = (
+			(0, 135, 0, 150, 0, 0),
+			(0, 135, H_grid - 150, H_grid, 0, H_grid),
+			(W - 135, W, 0, 150, W, 0),
+			(W - 135, W, H_grid - 150, H_grid, W, H_grid),
+		)
+		for x0, x1, y0, y1, cx_c, cy_c in corners:
+			ch, cs, cv_ = H[y0:y1, x0:x1], S[y0:y1, x0:x1], V[y0:y1, x0:x1]
+			white_frac = np.count_nonzero((cv_ > 185) & (cs < 48)) / float(ch.size)
+			if white_frac < 0.28:
+				continue
+			yy, xx = np.mgrid[y0:y1, x0:x1]
+			dist = np.hypot(xx - cx_c, yy - cy_c)
+			in_arc = ((dist > 14) & (dist < 118)).astype(np.uint8) * 255
+			teal_in_arc = cv2.bitwise_and(teal_mask[y0:y1, x0:x1], in_arc)
+			teal_cnt = int(np.count_nonzero(teal_in_arc))
+			if teal_cnt >= 35:
+				clustered = cv2.morphologyEx(teal_in_arc, cv2.MORPH_CLOSE, self.kernel_cluster)
+				t_cnts, _ = cv2.findContours(clustered, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+				if not t_cnts:
+					continue
+				main_c = max(t_cnts, key=cv2.contourArea)
+				tx, ty, tw_c, th_c = cv2.boundingRect(main_c)
+				tx0, ty0 = x0 + tx, y0 + ty
+				tx1, ty1 = tx0 + tw_c, ty0 + th_c
+				rx0 = max(x0 + 4, tx0 - 24)
+				ry0 = max(y0 + 4, ty0 - 14)
+				rx1 = min(x1 - 4, tx1 + 10)
+				ry1 = min(y1 - 4, ty1 + 26)
+				bw, bh = max(40, rx1 - rx0), max(44, ry1 - ry0)
+				fx = ox0 + int(round(rx0 * sw / float(W)))
+				fy = oy0 + int(round(ry0 * sh / float(H_grid)))
+				fw = int(round(bw * sw / float(W)))
+				fh = int(round(bh * sh / float(H_grid)))
+				return (fx, fy, fw, fh)
+
 		return None
 
 	def detect(self, table_frame: np.ndarray):
@@ -171,13 +322,24 @@ class DetectorHybrid:
 		if orig_h < 16 or orig_w < 16:
 			return None
 
-		# Use raw un-enhanced frame for motion differencing so LUT updates never trigger false motion
+		# 1. Check stationary/visual LEGO robot signature on the table
+		stat_box = self._detect_stationary_robot(table_frame)
+
+		# 2. Multi-horizon motion differencing on raw un-enhanced frame
 		small = cv2.resize(table_frame, (DETECTION_WIDTH, DETECTION_HEIGHT), interpolation=cv2.INTER_AREA)
 		blur = cv2.GaussianBlur(small, (5, 5), 0)
 
 		if not self.history or self.bg_float is None:
 			self.history.append(blur)
 			self.bg_float = blur.astype(np.float32)
+			if stat_box is not None:
+				bx, by, bw, bh = stat_box
+				rcx, rcy = bx + bw * 0.5, by + bh * 0.5
+				self.last_center = (
+					rcx * DETECTION_WIDTH / float(orig_w),
+					rcy * DETECTION_HEIGHT / float(orig_h),
+				)
+				return self._update_smooth_bbox(rcx, rcy, float(bw), float(bh), orig_w, orig_h)
 			return None
 
 		prev_1 = self.history[-1]
@@ -207,8 +369,6 @@ class DetectorHybrid:
 		mask_s = cv2.morphologyEx(mask_s, cv2.MORPH_OPEN, self.kernel_open)
 		mask_l = cv2.morphologyEx(mask_l, cv2.MORPH_OPEN, self.kernel_open)
 
-		# Intersect short-term motion with (long-term | background) difference:
-		# isolates only the moving object's CURRENT position and eliminates trailing ghosts
 		motion_mask = cv2.bitwise_and(mask_s, mask_l)
 
 		total_area = float(DETECTION_WIDTH * DETECTION_HEIGHT)
@@ -217,18 +377,25 @@ class DetectorHybrid:
 
 		if live_step_px < (MIN_MOTION_PIXELS // 2) or motion_px < MIN_MOTION_PIXELS or motion_px > total_area * 0.70:
 			if motion_px > total_area * 0.70:
-				# Full-frame camera bump or lighting switch: reset background model
 				self.bg_float = blur.astype(np.float32)
 			else:
-				# Absorb stationary scene quickly when nothing is moving
 				cv2.accumulateWeighted(blur, self.bg_float, 0.25)
+
+			if stat_box is not None:
+				bx, by, bw, bh = stat_box
+				rcx, rcy = bx + bw * 0.5, by + bh * 0.5
+				self.last_center = (
+					rcx * DETECTION_WIDTH / float(orig_w),
+					rcy * DETECTION_HEIGHT / float(orig_h),
+				)
+				return self._update_smooth_bbox(rcx, rcy, float(bw), float(bh), orig_w, orig_h)
 			return self._decay_and_none()
 
-		# Update background only on non-moving pixels so moving object is never absorbed into background
 		static_mask = cv2.bitwise_not(cv2.dilate(mask_s, self.kernel_open))
 		cv2.accumulateWeighted(blur, self.bg_float, 0.12, mask=static_mask)
 
-		# If custom YOLOv8 robot model (best.pt) is present, run GPU inference on the active moving frame
+		# 3. If custom YOLOv8 model is present during active motion, accept only boxes that are actually moving
+		min_contour_motion = max(16, int(MIN_MOTION_PIXELS * 0.45))
 		if self.yolo_model is not None and torch is not None:
 			try:
 				with torch.inference_mode():
@@ -238,47 +405,40 @@ class DetectorHybrid:
 						conf=0.55,
 						iou=0.45,
 						imgsz=640,
-						half=self.yolo_device.startswith("cuda"),
 						verbose=False,
 					)
 				if res and len(res) > 0 and res[0].boxes is not None and len(res[0].boxes) > 0:
 					boxes = res[0].boxes
 					xyxy = boxes.xyxy.detach().cpu().numpy()
 					confs = boxes.conf.detach().cpu().numpy()
-					best_idx = int(np.argmax(confs))
-					x1, y1, x2, y2 = [float(v) for v in xyxy[best_idx]]
-					raw_w = max(16.0, x2 - x1)
-					raw_h = max(16.0, y2 - y1)
-					raw_cx = x1 + raw_w * 0.5
-					raw_cy = y1 + raw_h * 0.5
-					self.miss_streak = 0
-					self.confirm_streak = CONFIRM_FRAMES
-					if self.smooth_bbox is None:
-						self.smooth_bbox = (raw_cx, raw_cy, raw_w, raw_h)
-					else:
-						scx, scy, sw, sh = self.smooth_bbox
-						scx += (raw_cx - scx) * 0.68
-						scy += (raw_cy - scy) * 0.68
-						sw += (raw_w - sw) * 0.35
-						sh += (raw_h - sh) * 0.35
-						self.smooth_bbox = (scx, scy, sw, sh)
-					scx, scy, sw, sh = self.smooth_bbox
-					fx = max(0, int(round(scx - sw * 0.5)))
-					fy = max(0, int(round(scy - sh * 0.5)))
-					fw_box = max(16, min(orig_w - fx, int(round(sw))))
-					fh_box = max(16, min(orig_h - fy, int(round(sh))))
-					return (fx, fy, fw_box, fh_box)
-				return self._decay_and_none()
+					for idx in np.argsort(-confs):
+						x1, y1, x2, y2 = [float(v) for v in xyxy[int(idx)]]
+						mx1 = max(0, int(x1 * DETECTION_WIDTH / float(orig_w)))
+						my1 = max(0, int(y1 * DETECTION_HEIGHT / float(orig_h)))
+						mx2 = min(DETECTION_WIDTH, int(math.ceil(x2 * DETECTION_WIDTH / float(orig_w))))
+						my2 = min(DETECTION_HEIGHT, int(math.ceil(y2 * DETECTION_HEIGHT / float(orig_h))))
+						if mx2 > mx1 and my2 > my1:
+							active_in_yolo = int(cv2.countNonZero(motion_mask[my1:my2, mx1:mx2]))
+							if active_in_yolo >= min_contour_motion:
+								raw_w = max(16.0, x2 - x1)
+								raw_h = max(16.0, y2 - y1)
+								raw_cx = x1 + raw_w * 0.5
+								raw_cy = y1 + raw_h * 0.5
+								self.last_center = (
+									raw_cx * DETECTION_WIDTH / float(orig_w),
+									raw_cy * DETECTION_HEIGHT / float(orig_h),
+								)
+								return self._update_smooth_bbox(raw_cx, raw_cy, raw_w, raw_h, orig_w, orig_h)
 			except Exception:
 				pass
 
+		# Skin mask on downscaled frame to reject human hands/arms reaching in from border
+		ycrcb = cv2.cvtColor(small, cv2.COLOR_BGR2YCrCb)
+		skin_mask = cv2.inRange(ycrcb, (40, 135, 85), (255, 180, 135))
+
 		mask = cv2.morphologyEx(motion_mask, cv2.MORPH_CLOSE, self.kernel_close)
-
 		contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-		if not contours:
-			return self._decay_and_none()
 
-		min_contour_motion = max(16, int(MIN_MOTION_PIXELS * 0.45))
 		candidates = []
 		for c in contours:
 			area = cv2.contourArea(c)
@@ -292,10 +452,35 @@ class DetectorHybrid:
 			active_px = int(cv2.countNonZero(motion_mask[by : by + bh, bx : bx + bw]))
 			if active_px < min_contour_motion:
 				continue
+			touches_border = (
+				bx <= 3 or by <= 3 or (bx + bw) >= (DETECTION_WIDTH - 3) or (by + bh) >= (DETECTION_HEIGHT - 3)
+			)
+			if touches_border:
+				skin_px = int(cv2.countNonZero(skin_mask[by : by + bh, bx : bx + bw]))
+				if skin_px > (bw * bh) * 0.28 or area > total_area * 0.16:
+					continue
 			candidates.append((bx, by, bw, bh, bx + bw * 0.5, by + bh * 0.5, active_px))
 
 		if not candidates:
+			if stat_box is not None:
+				bx, by, bw, bh = stat_box
+				rcx, rcy = bx + bw * 0.5, by + bh * 0.5
+				self.last_center = (
+					rcx * DETECTION_WIDTH / float(orig_w),
+					rcy * DETECTION_HEIGHT / float(orig_h),
+				)
+				return self._update_smooth_bbox(rcx, rcy, float(bw), float(bh), orig_w, orig_h)
 			return self._decay_and_none()
+
+		# If visual robot signature is also found, prefer its tight bounding box
+		if stat_box is not None:
+			bx, by, bw, bh = stat_box
+			rcx, rcy = bx + bw * 0.5, by + bh * 0.5
+			self.last_center = (
+				rcx * DETECTION_WIDTH / float(orig_w),
+				rcy * DETECTION_HEIGHT / float(orig_h),
+			)
+			return self._update_smooth_bbox(rcx, rcy, float(bw), float(bh), orig_w, orig_h)
 
 		self.miss_streak = 0
 		max_step = max(DETECTION_WIDTH, DETECTION_HEIGHT) * MAX_STEP_RATIO
@@ -310,7 +495,6 @@ class DetectorHybrid:
 
 		primary = max(candidates, key=_score_candidate)
 
-		# Merge nearby moving contour parts (e.g. leading & trailing edges of the same moving object)
 		px1, py1 = primary[0], primary[1]
 		px2, py2 = px1 + primary[2], py1 + primary[3]
 		merge_pad = 24
@@ -348,24 +532,4 @@ class DetectorHybrid:
 		raw_w = bw_merged * scale_x
 		raw_h = bh_merged * scale_y
 
-		if self.smooth_bbox is None:
-			self.smooth_bbox = (raw_cx, raw_cy, raw_w, raw_h)
-		else:
-			scx, scy, sw, sh = self.smooth_bbox
-			jump = math.hypot(raw_cx - scx, raw_cy - scy)
-			if jump > max(orig_w, orig_h) * 0.35:
-				self.smooth_bbox = (raw_cx, raw_cy, raw_w, raw_h)
-			else:
-				if jump > 2.0:
-					scx += (raw_cx - scx) * 0.68
-					scy += (raw_cy - scy) * 0.68
-				sw += (raw_w - sw) * 0.35
-				sh += (raw_h - sh) * 0.35
-				self.smooth_bbox = (scx, scy, sw, sh)
-
-		scx, scy, sw, sh = self.smooth_bbox
-		fx = max(0, int(round(scx - sw * 0.5)))
-		fy = max(0, int(round(scy - sh * 0.5)))
-		fw_box = max(16, min(orig_w - fx, int(round(sw))))
-		fh_box = max(16, min(orig_h - fy, int(round(sh))))
-		return (fx, fy, fw_box, fh_box)
+		return self._update_smooth_bbox(raw_cx, raw_cy, raw_w, raw_h, orig_w, orig_h)

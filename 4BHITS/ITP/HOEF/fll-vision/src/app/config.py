@@ -38,8 +38,8 @@ BORDER_MAX_SKIN_RATIO = 1.0
 CONFIRM_FRAMES = 2           # Consecutive detection ticks to confirm movement
 MAX_STEP_RATIO = 0.45        # Continuity preference radius ratio
 
-# Release focus when movement stops ("if there is no movement then don't focus on anything")
-STOPPED_HOLD_SEC = 0.25      # Brief 250ms grace window to prevent 1-frame flicker, then unfocuses immediately
+# Hold focus briefly when a moving robot pauses, while releasing cleanly when removed
+STOPPED_HOLD_SEC = 1.2       # Grace window to hold lock across brief pauses before unfocusing
 TARGET_SMOOTH_SPEED = 8.0    # Stage-1 60Hz target trajectory smoothing (removes 20Hz stepping)
 PAN_SPEED = 6.5              # Stage-2 fluid-head camera pan speed
 ZOOM_SPEED = 4.5             # Stage-2 smooth optical zoom speed

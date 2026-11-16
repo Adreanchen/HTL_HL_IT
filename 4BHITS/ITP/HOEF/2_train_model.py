@@ -73,10 +73,14 @@ def train_robot_detector(
 	"""
 	data_path = Path(data_yaml).resolve()
 	if not data_path.is_file():
-		raise FileNotFoundError(
-			f"Dataset configuration file not found at '{data_path}'.\n"
-			f"Ensure 'data.yaml' exists and points to your labeled train/valid image folders."
-		)
+		dataset_cand = Path("dataset") / data_yaml
+		if dataset_cand.is_file():
+			data_path = dataset_cand.resolve()
+		else:
+			raise FileNotFoundError(
+				f"Dataset configuration file not found at '{data_path}' or '{dataset_cand.resolve()}'.\n"
+				f"Ensure 'data.yaml' exists and points to your labeled train/valid image folders."
+			)
 
 	resolved_device = resolve_training_device(device)
 

@@ -48,7 +48,7 @@ root@ServerDesHomes:~#
 
 ## 4. Dateitransfer (Windows -> Server -> Container)
 ```cmd
-scp .\Desktop\SCHULE\4BHITS\INSY\Aufgabe4\dvdRentalBackup.sql frit@192.168.1.165:/home/frit/SCHULE/INSY/dvdRentalBackup.sql
+scp .\Desktop\SCHULE\4BHITS\INSY\Aufgabe4\dvdRentalBackup.sql frit@<IP>:/home/frit/SCHULE/INSY/dvdRentalBackup.sql
 ```
 ```bash
 docker cp /home/frit/SCHULE/INSY/dvdRentalBackup.sql debian-pg-container:/tmp/dvdRentalBackup.sql
@@ -74,13 +74,13 @@ docker exec -it debian-pg-container bash -c "PGPASSWORD='pgFrit' psql -h 127.0.0
 ```
 ## 7. Zugriff mit Portforwarding (Windows)
 ``````cmd
-ssh -L 5433:localhost:5432 frit@192.168.1.165
+ssh -L 5433:localhost:5432 frit@<IP>
 ``````
 
 ``````cmd
 PS C:\Users\Adrian-LOQ>
-PS C:\Users\Adrian-LOQ> ssh -L 5433:127.0.0.1:5432 frit@192.168.1.165
-frit@192.168.1.165's password:
+PS C:\Users\Adrian-LOQ> ssh -L 5433:127.0.0.1:5432 frit@<IP>
+frit@<IP>'s password:
 Linux ServerDesHomes 6.12.111+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.111-1 (2026-09-28) x86_64
 
 The programs included with the Debian GNU/Linux system are free software;
@@ -89,7 +89,7 @@ individual files in /usr/share/doc/*/copyright.
 
 Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
 permitted by applicable law.
-Last login: Wed Nov  4 15:59:57 2026 from 172.18.0.2
+Last login: Wed Nov  4 15:59:57 2026 from <IP>
 frit@ServerDesHomes:~$
 ``````
 
@@ -132,7 +132,7 @@ PS C:\Users\Adrian-LOQ>
 ## 8. Direkter Zugriff ohne Portforwarding (Windows)
 
 ```cmd
-psql -h 192.168.1.165 -p 5432 -U pgfrit -d dvdrental
+psql -h <IP> -p 5432 -U pgfrit -d dvdrental
 ```
 
 ``````sql
