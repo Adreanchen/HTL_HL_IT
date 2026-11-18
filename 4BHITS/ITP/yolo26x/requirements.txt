@@ -1,0 +1,21 @@
+# Unified Requirements for FLL Vision Backend & YOLO26x GPU Robot Tracker
+--extra-index-url https://download.pytorch.org/whl/cu130
+
+# GPU / Deep Learning (YOLO26x + CUDA 13.0 / NVIDIA DGX Spark Blackwell GB10)
+torch>=2.7.0
+torchvision>=0.22.0
+ultralytics>=8.4.215
+
+# TensorRT / ONNX Export (install `tensorrt` for TensorRT FP16 export on CUDA/DGX Spark)
+onnx>=1.16.0
+onnxslim>=0.1.31
+
+# Computer Vision & Math
+numpy==1.26.4
+opencv-contrib-python>=4.10.0
+PyYAML>=6.0.1
+
+# Web Stream & Remote Control Server (fll-vision)
+fastapi
+uvicorn
+websockets

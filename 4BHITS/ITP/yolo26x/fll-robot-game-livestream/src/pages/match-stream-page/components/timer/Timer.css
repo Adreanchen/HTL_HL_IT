@@ -1,0 +1,7 @@
+.timer--red {
+	color: var(--color-dark-red);
+}
+
+.timer__digit--invisible {
+	visibility: hidden;
+}
