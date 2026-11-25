@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/weatherserver/temperature")
 public class TemperatureController {
@@ -25,5 +27,11 @@ public class TemperatureController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(latestTemperature);
+    }
+
+    @GetMapping("/all")
+    @Operation(summary = "get all temperatures")
+    public ResponseEntity<List<Temperature>> findAll() {
+        return ResponseEntity.ok(repository.allTemps());
     }
 }

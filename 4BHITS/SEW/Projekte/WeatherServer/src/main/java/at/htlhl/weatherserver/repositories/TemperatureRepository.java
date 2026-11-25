@@ -22,6 +22,12 @@ public class TemperatureRepository {
             LIMIT 1
             """;
 
+    private static final String SELECT_ALL_TEMP_SQL = """
+            SELECT id, measuretime, temp
+            FROM temperature
+            ORDER BY measuretime DESC
+            """;
+
     // Fields *****************************************************************
 
     private final JdbcTemplate jdbcTemplate;
@@ -37,6 +43,10 @@ public class TemperatureRepository {
     public Temperature findLatestTemperature() {
         List<Temperature> temperatures = jdbcTemplate.query(SELECT_LATEST_TEMP_SQL, new TemperatureRowMapper());
         return temperatures.isEmpty() ? null : temperatures.getFirst();
+    }
+
+    public List<Temperature> allTemps() {
+        return jdbcTemplate.query(SELECT_ALL_TEMP_SQL, new TemperatureRowMapper());
     }
 
     private static class TemperatureRowMapper implements RowMapper<Temperature> {
