@@ -1,6 +1,8 @@
 package at.htlhl.weatherserver.repositories;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.swing.tree.RowMapper;
 
@@ -35,13 +37,19 @@ public class TemperatureRepository {
     // API ********************************************************************
 
     public Temperature findLatesTemperature() {
-        List<Temperature> temperatures = jdbcTemplate.
+        List<Temperature> temperatures = jdbcTemplate.query(SELECT_LATEST_TEMP_SQL, new TemperatureRowMapper());
+        return temperatures.isEmpty() ? null : temperatures.getFirst();
+    }
+
+    private static class TemperatureRowMapper implements RowMapper<Temperature> {
+        @Override
+        public Temperature mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Temperature temperature = new Temperature();
+            temperature.setId(rs.getLong("id"));
+            temperature.setMeasureTime(rs.getTimestamp("measuretime").toLocalDateTime());
+            temperature.setTemp(rs.getFloat("temp"));
+
+            return temperature;
+        }
     }
 }
-
-private static class TemperatureRowMapper implements RowMapper<Temperature> {
-    @Override
-    public Temperature mapRow(ResultSet rs, int rowNum) throws SQLException {
-        return null;
-    }
-}}
