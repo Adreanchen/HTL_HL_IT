@@ -1030,6 +1030,96 @@
 			animation: loginShake 0.35s ease-in-out;
 		}
 	</style>
+	<style>
+		/* Additive Raw Camera Recording Controls */
+		.raw-rec-btn {
+			border-color: var(--red-border);
+			color: var(--red);
+			background: var(--red-soft);
+		}
+
+		.raw-rec-btn:hover:not(:disabled) {
+			background: #fee2e2;
+			border-color: #fca5a5;
+		}
+
+		.raw-rec-btn::before {
+			content: "";
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background: var(--red);
+			flex-shrink: 0;
+		}
+
+		.raw-rec-btn.is-recording {
+			background: var(--red);
+			border-color: var(--red);
+			color: #ffffff;
+			box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5);
+			animation: rawRecPulse 1.4s ease-in-out infinite;
+		}
+
+		.raw-rec-btn.is-recording:hover:not(:disabled) {
+			background: #b91c1c;
+			border-color: #b91c1c;
+		}
+
+		.raw-rec-btn.is-recording::before {
+			background: #ffffff;
+		}
+
+		@keyframes rawRecPulse {
+			0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.48); }
+			70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+			100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+		}
+
+		.raw-rec-status {
+			margin-top: 10px;
+			padding: 8px 12px;
+			border-radius: var(--radius-sm);
+			border: 1px solid var(--border);
+			background: var(--surface-subtle);
+			color: var(--text-secondary);
+			font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+			font-size: 12px;
+			font-weight: 600;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			word-break: break-word;
+		}
+
+		.raw-rec-status::before {
+			content: "";
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			background: var(--text-muted);
+			flex-shrink: 0;
+		}
+
+		.raw-rec-status.is-recording {
+			background: var(--red-soft);
+			border-color: var(--red-border);
+			color: var(--red);
+		}
+
+		.raw-rec-status.is-recording::before {
+			background: var(--red);
+		}
+
+		.raw-rec-status.is-error {
+			background: var(--red-soft);
+			border-color: var(--red-border);
+			color: var(--red);
+		}
+
+		.raw-rec-status.is-error::before {
+			background: var(--amber);
+		}
+	</style>
 </head>
 <body>
 	<!-- Login Screen -->
@@ -1173,7 +1263,9 @@
 					<button id="toggleLiveBtn" type="button">Live Streams</button>
 					<button id="toggleSnapshotBtn" type="button">Check Crop</button>
 					<button id="resetCalibBtn" type="button">Reset 50/50</button>
+					<button id="rawRecordBtn" type="button" class="raw-rec-btn" aria-pressed="false">Record Raw Video</button>
 				</div>
+				<div id="rawRecordStatus" class="raw-rec-status" role="status" aria-live="polite">Raw capture idle (00:00)</div>
 
 				<!-- Interactive Manual Crop Editor -->
 				<div id="editorBox" class="media-box hidden">
@@ -2208,6 +2300,129 @@
 			} else {
 				lockUI();
 			}
+		})();
+	</script>
+	<script>
+		(function () {
+			const btn = document.getElementById("rawRecordBtn");
+			const statusEl = document.getElementById("rawRecordStatus");
+			const appShell = document.getElementById("appShell");
+			if (!btn || !statusEl) return;
+
+			let inFlight = false;
+
+			function formatDuration(seconds) {
+				const total = Math.max(0, Math.floor(Number(seconds) || 0));
+				const mins = String(Math.floor(total / 60)).padStart(2, "0");
+				const secs = String(total % 60).padStart(2, "0");
+				return mins + ":" + secs;
+			}
+
+			function shortFileName(filePath) {
+				if (!filePath) return "";
+				return String(filePath).split(/[\\/]/).pop();
+			}
+
+			function renderStatus(data) {
+				if (!data || typeof data !== "object") return;
+				const isRecording = Boolean(data.recording);
+				const fileName = shortFileName(data.file);
+				const duration = formatDuration(data.duration_seconds);
+				const frames = Number.isFinite(data.frames_written) ? data.frames_written : 0;
+				const err = data.error ? String(data.error) : "";
+
+				btn.classList.toggle("is-recording", isRecording);
+				btn.setAttribute("aria-pressed", isRecording ? "true" : "false");
+				btn.textContent = isRecording ? "Stop Raw Video" : "Record Raw Video";
+
+				statusEl.classList.toggle("is-recording", isRecording);
+				statusEl.classList.toggle("is-error", !isRecording && Boolean(err));
+
+				if (isRecording) {
+					let text = "REC " + duration;
+					if (fileName) text += " · " + fileName;
+					text += " (" + frames + " frames)";
+					if (err) text += " · Error: " + err;
+					statusEl.textContent = text;
+					return;
+				}
+
+				if (err) {
+					statusEl.textContent = "Error: " + err + (fileName ? " · " + fileName : "");
+					return;
+				}
+
+				if (fileName) {
+					statusEl.textContent = "Saved " + fileName + " (" + duration + ", " + frames + " frames)";
+					return;
+				}
+
+				statusEl.textContent = "Raw capture idle (00:00)";
+			}
+
+			function isUiVisible() {
+				if (document.hidden) return false;
+				if (appShell && appShell.classList.contains("hidden")) return false;
+				return true;
+			}
+
+			async function fetchStatus() {
+				if (inFlight || !isUiVisible()) return;
+				try {
+					const res = await fetch("/api/raw-recording/status", { cache: "no-store" });
+					const data = await res.json().catch(function () { return null; });
+					if (!res.ok || !data) {
+						if (!inFlight) {
+							statusEl.classList.remove("is-recording");
+							statusEl.classList.add("is-error");
+							statusEl.textContent = "Error: status HTTP " + res.status;
+						}
+						return;
+					}
+					if (!inFlight) renderStatus(data);
+				} catch (_) {
+					if (!inFlight) {
+						statusEl.classList.remove("is-recording");
+						statusEl.classList.add("is-error");
+						statusEl.textContent = "Error: raw recording status unavailable";
+					}
+				}
+			}
+
+			btn.addEventListener("click", async function () {
+				if (inFlight) return;
+				inFlight = true;
+				btn.disabled = true;
+				try {
+					const res = await fetch("/api/raw-recording/toggle", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" }
+					});
+					const data = await res.json().catch(function () { return null; });
+					if (!res.ok || !data || data.ok === false) {
+						const msg = (data && (data.error || data.detail)) || ("HTTP " + res.status);
+						statusEl.classList.remove("is-recording");
+						statusEl.classList.add("is-error");
+						statusEl.textContent = "Error: " + msg;
+						return;
+					}
+					renderStatus(data);
+				} catch (err) {
+					statusEl.classList.remove("is-recording");
+					statusEl.classList.add("is-error");
+					statusEl.textContent = "Error: " + (err && err.message ? err.message : "request failed");
+				} finally {
+					inFlight = false;
+					btn.disabled = false;
+				}
+			});
+
+			document.addEventListener("visibilitychange", function () {
+				if (isUiVisible()) fetchStatus();
+			});
+
+			fetchStatus();
+			setInterval(fetchStatus, 1000);
 		})();
 	</script>
 </body>

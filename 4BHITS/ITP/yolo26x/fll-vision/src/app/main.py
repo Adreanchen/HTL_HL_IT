@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import List, Optional
 
 from fastapi import Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
@@ -13,7 +14,9 @@ from .calibration import (
 	render_calibration_preview_jpeg,
 )
 from .config import LEFT_GPU, RIGHT_GPU, VIDEO_SOURCE
-from .state import MatchStateManager
+from .raw_recorder import RawVideoRecorder
+from .raw_recording_routes import create_raw_recording_router
+from .state import WORKSPACE_ROOT, MatchStateManager
 from .stream import FrameBroadcaster, mjpeg_stream
 from .worker import VisionPipeline
 
@@ -46,6 +49,10 @@ pipeline = VisionPipeline(
 	right_control_broadcaster,
 	initial_rois=state_manager.get_table_rois(),
 )
+
+raw_recorder = RawVideoRecorder(Path(WORKSPACE_ROOT) / "videos")
+pipeline.set_raw_frame_hook(raw_recorder.on_frame)
+app.include_router(create_raw_recording_router(raw_recorder))
 
 
 class TeamsUpdateRequest(BaseModel):
@@ -85,6 +92,7 @@ def startup_event():
 
 @app.on_event("shutdown")
 def shutdown_event():
+	raw_recorder.stop()
 	pipeline.stop()
 
 

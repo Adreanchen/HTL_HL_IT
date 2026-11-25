@@ -35,7 +35,8 @@ public class TemperatureRepository {
     // API ********************************************************************
 
     public Temperature findLatesTemperature() {
-        List<Temperature> temperatures = jdbcTemplate.}
+        List<Temperature> temperatures = jdbcTemplate.
+    }
 }
 
 private static class TemperatureRowMapper implements RowMapper<Temperature> {

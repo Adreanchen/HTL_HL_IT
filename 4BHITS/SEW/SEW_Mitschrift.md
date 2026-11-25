@@ -214,3 +214,9 @@ public enum MySingleton{
 z.B. Zugriff auf eine zentrale Logging-Funktionalität in eine Datei
 
 > **Vorsicht:** Eine Singleton Implementierung sollte sehr sparsam eingesetzt werden, da die Gefahr besteht, quasi ein Äquivalent zu globalen Variablen zu schaffen. Die Testbarkeit wird darüber hinaus sehr erschwert.
+
+## 0 Auth
+
+Oauth (Open Authorization) ist eine standardisierte, sichere API-Autorisierung für Desktop-, Web-, und Mobile-Anwendungen. Aktuell ist Version 2.0 z.B.: Einem Client wird der Zugriff auf den Resource Server (Rest-API) durch einen Authorization Server gewährt, ohne geheime Details seiner Zugangsdaten dem Resource-Server preiszugeben.
+
+<img src="pics/0AUTH.png">

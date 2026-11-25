@@ -1,8 +1,0 @@
-# venv
-.venv
-
-# byte-compiled
-__pycache__/
-
-# misc
-.DS_Store

@@ -441,6 +441,7 @@ class VisionPipeline:
 		self._right_ctrl_out_shm: Optional[SharedMemory] = None
 		self._frame_array: Optional[np.ndarray] = None
 		self._processes = []
+		self._raw_frame_hook = None
 
 	def _write_ctrl(self, stop_flag: int = 0) -> None:
 		if self._ctrl_shm is None:
@@ -486,6 +487,9 @@ class VisionPipeline:
 			self._write_ctrl(stop_flag=0 if self._running else 1)
 		return clean
 
+	def set_raw_frame_hook(self, callback) -> None:
+		self._raw_frame_hook = callback
+
 	def get_latest_frame(self) -> Optional[np.ndarray]:
 		with self._lock:
 			return self._latest_frame.copy() if self._latest_frame is not None else None
@@ -493,6 +497,11 @@ class VisionPipeline:
 	def _on_camera_frame(self, frame: np.ndarray, frame_id: int) -> None:
 		if not self._running or self._frame_array is None:
 			return
+		if self._raw_frame_hook is not None:
+			try:
+				self._raw_frame_hook(frame)
+			except Exception:
+				pass
 
 		h, w = frame.shape[:2]
 		if w > MAX_FRAME_W or h > MAX_FRAME_H:
