@@ -4,10 +4,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import javax.swing.tree.RowMapper;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import at.htlhl.weatherserver.model.Temperature;
@@ -17,16 +15,16 @@ public class TemperatureRepository {
 
     // Constants **************************************************************
 
-    private final static String SELECT_LATEST_TEMP_SQL = """
-            SELECT measuretime, temp
-            FROM TemperatureRepository
+    private static final String SELECT_LATEST_TEMP_SQL = """
+            SELECT id, measuretime, temp
+            FROM temperature
             ORDER BY measuretime DESC
             LIMIT 1
             """;
 
     // Fields *****************************************************************
 
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     // Instance creation ******************************************************
 
@@ -36,7 +34,7 @@ public class TemperatureRepository {
 
     // API ********************************************************************
 
-    public Temperature findLatesTemperature() {
+    public Temperature findLatestTemperature() {
         List<Temperature> temperatures = jdbcTemplate.query(SELECT_LATEST_TEMP_SQL, new TemperatureRowMapper());
         return temperatures.isEmpty() ? null : temperatures.getFirst();
     }

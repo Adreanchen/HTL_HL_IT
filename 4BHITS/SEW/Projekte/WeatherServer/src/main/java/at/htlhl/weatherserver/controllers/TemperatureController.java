@@ -20,7 +20,7 @@ public class TemperatureController {
     @GetMapping("")
     @Operation(summary = "get latest temperature")
     public ResponseEntity<Temperature> findLatest() {
-        Temperature latestTemperature = repository.findLatesTemperature();
+        Temperature latestTemperature = repository.findLatestTemperature();
         if(latestTemperature == null) {
             return ResponseEntity.notFound().build();
         }
